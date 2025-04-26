@@ -1,5 +1,4 @@
-package letsit_backend.dto;
-import letsit_backend.model.Post;
+package letsit_backend.dto.project;
 import lombok.Getter;
 import lombok.Setter;
 

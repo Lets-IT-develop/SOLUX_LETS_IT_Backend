@@ -1,4 +1,4 @@
-package letsit_backend.dto;
+package letsit_backend.dto.auth;
 
 import letsit_backend.model.Member;
 import lombok.Data;

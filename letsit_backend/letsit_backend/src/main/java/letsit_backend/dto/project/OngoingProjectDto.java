@@ -1,4 +1,4 @@
-package letsit_backend.dto;
+package letsit_backend.dto.project;
 
 import lombok.*;
 
