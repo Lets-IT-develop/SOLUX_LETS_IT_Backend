@@ -1,11 +1,10 @@
-package letsit_backend.dto;
+package letsit_backend.dto.post;
 
 import letsit_backend.model.Post;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.List;
 

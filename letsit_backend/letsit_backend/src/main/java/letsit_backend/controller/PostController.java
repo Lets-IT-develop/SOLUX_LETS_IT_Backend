@@ -2,8 +2,8 @@
 //
 //import jakarta.validation.Valid;
 //import letsit_backend.CurrentUser;
-//import letsit_backend.dto.PostRequestDto;
-//import letsit_backend.dto.PostResponseDto;
+//import letsit_backend.dto.post.PostRequestDto;
+//import letsit_backend.dto.post.PostResponseDto;
 //import letsit_backend.dto.Response;
 //import letsit_backend.model.Member;
 //import letsit_backend.service.PostService;
@@ -88,8 +88,8 @@ package letsit_backend.controller;
 
 import jakarta.validation.Valid;
 import letsit_backend.CurrentUser;
-import letsit_backend.dto.PostRequestDto;
-import letsit_backend.dto.PostResponseDto;
+import letsit_backend.dto.post.PostRequestDto;
+import letsit_backend.dto.post.PostResponseDto;
 import letsit_backend.dto.Response;
 import letsit_backend.model.Member;
 import letsit_backend.service.PostService;

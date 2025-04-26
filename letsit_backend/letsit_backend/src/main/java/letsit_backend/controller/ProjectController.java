@@ -1,8 +1,8 @@
 package letsit_backend.controller;
 
 import letsit_backend.CurrentUser;
-import letsit_backend.dto.OngoingProjectDto;
-import letsit_backend.dto.ProjectDto;
+import letsit_backend.dto.project.OngoingProjectDto;
+import letsit_backend.dto.project.ProjectDto;
 import letsit_backend.dto.Response;
 import letsit_backend.model.Member;
 import letsit_backend.service.ProjectService;

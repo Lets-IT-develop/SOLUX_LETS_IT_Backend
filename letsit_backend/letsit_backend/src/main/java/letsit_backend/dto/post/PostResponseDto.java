@@ -1,4 +1,4 @@
-package letsit_backend.dto;
+package letsit_backend.dto.post;
 
 import letsit_backend.model.Post;
 import lombok.Getter;

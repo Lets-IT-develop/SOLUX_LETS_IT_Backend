@@ -1,8 +1,7 @@
 package letsit_backend.service;
 
-import letsit_backend.dto.OngoingProjectDto;
-import letsit_backend.dto.ProjectDto;
-import letsit_backend.dto.team.TeamCalendarResponseDto;
+import letsit_backend.dto.project.OngoingProjectDto;
+import letsit_backend.dto.project.ProjectDto;
 import letsit_backend.model.*;
 import letsit_backend.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
