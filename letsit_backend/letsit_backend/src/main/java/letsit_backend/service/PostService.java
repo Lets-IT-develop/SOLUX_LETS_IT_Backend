@@ -1,5 +1,6 @@
 package letsit_backend.service;
 
+import letsit_backend.dto.comment.CommentResponseDto;
 import letsit_backend.dto.post.PostRequestDto;
 import letsit_backend.dto.post.PostResponseDto;
 import letsit_backend.model.Area;
