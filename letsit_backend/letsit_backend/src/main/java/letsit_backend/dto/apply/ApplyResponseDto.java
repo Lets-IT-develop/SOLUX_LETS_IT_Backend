@@ -16,9 +16,10 @@ public class ApplyResponseDto {
     private String applyContent;
     private String contact;
     private Timestamp applyCreateDate;
+
     public ApplyResponseDto(Apply apply) {
         this.applyId = apply.getApplyId();
-        this.userId = apply.getUserId().getUserId();
+        this.userId = apply.getMember().getUserId();
         this.preferStack = apply.getPreferStack();
         this.desiredField = apply.getDesiredField();
         this.applyContent = apply.getApplyContent();

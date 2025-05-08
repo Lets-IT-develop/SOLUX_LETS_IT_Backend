@@ -2,7 +2,6 @@ package letsit_backend.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -26,7 +25,7 @@ public class Apply {
 
     @ManyToOne
     @JoinColumn(name = "USER_ID")
-    private Member userId;
+    private Member member;
 
     @NotEmpty
     private String preferStack;
@@ -50,9 +49,16 @@ public class Apply {
     public void approved() {
         this.confirm = true;
     }
-    public boolean isApproved() {return Boolean.TRUE.equals(this.confirm);}
+
+    public boolean isApproved() {
+        return Boolean.TRUE.equals(this.confirm);
+    }
+
     public void refused() {
         this.confirm = false;
     }
-    public boolean isNullYet() {return this.confirm == null;}
+
+    public boolean isNullYet() {
+        return this.confirm == null;
+    }
 }
