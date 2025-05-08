@@ -84,7 +84,7 @@ public class ApplyService {
         log.info("Applicants for post Id : {}", postId);
         return applies.stream()
                 .filter(Apply::isNullYet)
-                .map(apply-> {
+                .map(apply -> {
                     Member applicant = apply.getUserId();
                     Profile profile = profileRepository.findByUserId(applicant);
                     return ApplicantProfileDto.fromEntity(profile, apply);
@@ -123,6 +123,7 @@ public class ApplyService {
         applyRepository.save(apply);
         log.info("Application approved. Apply ID: {}", applyId);
     }
+
     // 특정 지원자 거절 로직
     public void rejectApplicant(Long postId, Long applyId, Member member) {
         Post post = postRepository.findById(postId).orElseThrow(() -> new IllegalArgumentException("해당 구인글이 존재하지 않습니다."));
