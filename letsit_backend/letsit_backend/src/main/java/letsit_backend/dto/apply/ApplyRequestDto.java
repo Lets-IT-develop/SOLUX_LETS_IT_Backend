@@ -23,7 +23,7 @@ public class ApplyRequestDto {
     public Apply toEntity(Post post, Member member) {
         return Apply.builder()
                 .postId(post)
-                .userId(member)
+                .member(member)
                 .preferStack(preferStack)
                 .desiredField(desiredField)
                 .applyContent(applyContent)
