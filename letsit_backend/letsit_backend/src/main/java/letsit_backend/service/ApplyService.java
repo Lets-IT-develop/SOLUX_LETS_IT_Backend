@@ -88,20 +88,28 @@ public class ApplyService {
 
     // 지원자 프로필 리스트 취합
     private List<ApplicantProfileDto> getApplicantProfilesByFilter(Long postId, Member member, Predicate<Apply> filter) {
+        // 게시글 조회 및 권한 확인
         Post post = getPostIfOwner(postId, member);
+
+        // Apply 목록 중 필터 조건에 해당하는 지원서만 필터링: 승인 or Null
         List<Apply> applies = applyRepository.findByPostId(post)
                 .stream()
                 .filter(filter)
                 .toList();
 
+        // 각 Apply 객체에서 지원자 Member 객체만 추출
         List<Member> applicants = applies.stream()
                 .map(Apply::getMember)
                 .collect(Collectors.toList());
 
+        // 지원자 Member 객체 에 대응하는 Profile 객체들을 O(1)에 조회
         List<Profile> profiles = profileRepository.findByMemberIn(applicants);
+
+        // userId를 키로 하는 Profile Map 구성(빠른 조회 목적)
         Map<Long, Profile> profileMap = profiles.stream()
                 .collect(Collectors.toMap(p -> p.getMember().getUserId(), p -> p));
 
+        // 각 Apply에 대해 해당 지원자의 Profile을 찾아 ApplicantProfileDto로 매핑 후 반환
         return applies.stream()
                 .map(apply -> {
                     Profile profile = profileMap.get(apply.getMember().getUserId());
