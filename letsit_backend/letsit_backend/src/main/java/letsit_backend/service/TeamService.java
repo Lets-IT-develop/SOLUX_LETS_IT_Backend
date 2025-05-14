@@ -1,6 +1,5 @@
 package letsit_backend.service;
 
-import jakarta.persistence.EntityNotFoundException;
 import letsit_backend.dto.team.*;
 import letsit_backend.model.*;
 import letsit_backend.repository.*;
@@ -11,7 +10,6 @@ import org.hibernate.boot.model.naming.IllegalIdentifierException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -65,7 +63,7 @@ public class TeamService {
         // Post post = PostRepository.findById.orElseThrow(()->new RuntimeException("this is not found");
         Optional<TeamPost> teamPostOptional = teamPostRepository.findById(teamPostId);
         TeamPost teamPost = teamPostRepository.findById(teamPostId)
-                .orElseThrow(()-> new RuntimeException("팀게시글을 찾을수없음"));
+                .orElseThrow(() -> new RuntimeException("팀게시글을 찾을수없음"));
 
 
         Post post = teamPost.getPostId();              //post불러옴
@@ -74,7 +72,7 @@ public class TeamService {
         for (Apply applie : applies) {
             if (applie.getConfirm()) {                // 지원서 승인된사람불러옴.
                 // 팀원목록 저장
-                Member member = applie.getUserId();   // member객체소환
+                Member member = applie.getMember();   // member객체소환
                 TeamMember teamMember = new TeamMember(teamPost, member, TeamMember.Role.Team_Member);
                 teamMemberRepository.save(teamMember);
             }
@@ -90,7 +88,7 @@ public class TeamService {
     // 팀정보 불러오기
     public TeamInfoResponseDto roadTeamInfo(Long teamId) {
         TeamPost teamPost = teamPostRepository.findById(teamId)
-                .orElseThrow(()-> new RuntimeException("team is not found"));
+                .orElseThrow(() -> new RuntimeException("team is not found"));
 
         List<TeamMember> teamMemberList = teamMemberRepository.findAllByTeamId(teamPost);
         // TODO 팀멤버리스트 없을시 예외처리 필요
@@ -128,7 +126,7 @@ public class TeamService {
         // TODO 더티채킹
         // FIXME null값을 의도적으로 주입했을때 없애는 방법이없는 오류 수정
         TeamPost teamPost = teamPostRepository.findById(teamId)
-                .orElseThrow(()-> new IllegalIdentifierException("team is not found"));
+                .orElseThrow(() -> new IllegalIdentifierException("team is not found"));
         teamPost.TeamUpdate(teamUpdateRequestDto.getTeamName(),
                 teamUpdateRequestDto.getGithubLink(),
                 teamUpdateRequestDto.getNotionLink());
@@ -152,22 +150,22 @@ public class TeamService {
         // TODO 업데이트해서 정보수정기능으로 접근 lock하기
         // team정보 불러오기
         TeamPost teamPost = teamPostRepository.findById(teamId)
-                .orElseThrow(()-> new IllegalIdentifierException("팀을 찾을수없음."));
+                .orElseThrow(() -> new IllegalIdentifierException("팀을 찾을수없음."));
 
         // 팀장 찾아서 일반멤버로 교체
         TeamMember LeaderChangeToMember =
                 teamMemberRepository.findTeamMemberByTeamIdAndTeamMemberRole(teamPost, TeamMember.Role.Team_Leader)
-                        .orElseThrow(()-> new IllegalIdentifierException("팀장정보를 찾을수없음."));
+                        .orElseThrow(() -> new IllegalIdentifierException("팀장정보를 찾을수없음."));
 
         LeaderChangeToMember.setTeamMemberRole(TeamMember.Role.Team_Member);
         teamMemberRepository.save(LeaderChangeToMember);
 
         // 팀원 찾아서 팀장으로 교체
         Member member = memberRepository.findById(userId)
-                .orElseThrow(()-> new IllegalIdentifierException("유저를 찾을수없음."));
+                .orElseThrow(() -> new IllegalIdentifierException("유저를 찾을수없음."));
 
         TeamMember MemberChangeToLeader = teamMemberRepository.findByTeamIdAndUserId(teamPost, member)
-                .orElseThrow(()-> new IllegalIdentifierException("팀멤버를 찾을수없음."));
+                .orElseThrow(() -> new IllegalIdentifierException("팀멤버를 찾을수없음."));
 
         MemberChangeToLeader.setTeamMemberRole(TeamMember.Role.Team_Leader);
         teamMemberRepository.save(MemberChangeToLeader);
@@ -179,14 +177,14 @@ public class TeamService {
     public void projectComplete(Long teamId) {
         // TODO 데이터값 True면 못되돌리도록 error출력
         TeamPost teamPost = teamPostRepository.findById(teamId)
-                .orElseThrow(()-> new IllegalIdentifierException("team is not found"));
+                .orElseThrow(() -> new IllegalIdentifierException("team is not found"));
         teamPost.projectEnd();
     }
 
     // 프로젝틑 종료되었는지 검증
     public boolean isCompleted(Long teamId) {
         TeamPost teamPost = teamPostRepository.findById(teamId)
-                .orElseThrow(()-> new IllegalIdentifierException("team is not found"));
+                .orElseThrow(() -> new IllegalIdentifierException("team is not found"));
 
         return teamPost.getIsComplete();
     }
