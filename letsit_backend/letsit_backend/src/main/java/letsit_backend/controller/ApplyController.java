@@ -49,13 +49,13 @@ public class ApplyController {
         if (member == null) {
             return Response.fail("미인증 회원");
         }
-        List<ApplicantProfileDto> applicant = applyService.getApplicantProfiles(postId, member);
+        List<ApplicantProfileDto> applicant = applyService.getPendingApplicantProfiles(postId, member);
         return Response.success("지원자 리스트", applicant);
     }
 
     @GetMapping(value = "/{postId}/approvedlist")
     public Response<List<ApplicantProfileDto>> getApprovedApplicantList(@PathVariable("postId") Long postId, @CurrentUser Member member) {
-        List<ApplicantProfileDto> approved =  applyService.getApprovedApplicantProfiles(postId, member);
+        List<ApplicantProfileDto> approved = applyService.getApprovedApplicantProfiles(postId, member);
         return Response.success("승인된 지원자 리스트", approved);
     }
 
