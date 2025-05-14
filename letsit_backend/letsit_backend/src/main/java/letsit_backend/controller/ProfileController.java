@@ -3,7 +3,6 @@ package letsit_backend.controller;
 import letsit_backend.CurrentUser;
 import letsit_backend.dto.Response;
 import letsit_backend.dto.profile.ProfileDto;
-import letsit_backend.dto.profile.ProfileRequestDto;
 import letsit_backend.dto.profile.ProfileResponseDto;
 import letsit_backend.model.Member;
 import letsit_backend.model.Profile;
@@ -14,7 +13,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -80,7 +78,7 @@ public class ProfileController {
         }
 
         Profile profile = convertFromDtoToEntity(profileDto);
-        profile.setUserId(member);
+        profile.setMember(member);
         Profile savedProfile = profileService.saveProfile(profile);
         logger.debug("생성된 프로필: {}", savedProfile);
         ProfileResponseDto profileResponseDto = convertToResponseDto(savedProfile);
@@ -139,7 +137,6 @@ public class ProfileController {
      */
 
 
-
     @PatchMapping("/upload")
     public Response<ProfileResponseDto> updateProfile(@CurrentUser Member member, @RequestBody ProfileDto profileDto) {
         logger.debug("userId와 profileDto로 프로필 수정 요청: {}와 {}", member.getUserId(), profileDto);
@@ -182,7 +179,7 @@ public class ProfileController {
         logger.debug("ProfileDto를 Profile 엔티티로 변환: {}", member);
         return Profile.builder()
                 .profileId(profileDto.getProfileId())
-                .userId(member)
+                .member(member)
                 .name(profileDto.getName())
                 .nickname(profileDto.getNickname())
                 .age(profileDto.getAge())
@@ -195,10 +192,11 @@ public class ProfileController {
                 .mannerTier(profileDto.getMannerTier())
                 .build();
     }
+
     private ProfileResponseDto convertToResponseDto(Profile profile) {
         return new ProfileResponseDto(
                 profile.getProfileId(),
-                profile.getUserId().getUserId(),
+                profile.getMember().getUserId(),
                 profile.getMannerTier(),
                 profile.getMannerScore(),
                 profile.getName(),

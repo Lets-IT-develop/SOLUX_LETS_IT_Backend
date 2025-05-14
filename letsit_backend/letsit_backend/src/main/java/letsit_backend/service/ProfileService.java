@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import org.springframework.security.access.AccessDeniedException;
+
 import java.util.List;
 
 @Service
@@ -39,7 +40,7 @@ public class ProfileService {
     }
 
     @Transactional
-    public Profile createOrUpdateProfile(ProfileRequestDto profileDto , Member member) {
+    public Profile createOrUpdateProfile(ProfileRequestDto profileDto, Member member) {
         //member.setUserId(profileDto.getUserId());
         if (!member.getUserId().equals(profileDto.getUserId())) {
             throw new AccessDeniedException("You do not have permission to modify this profile");
@@ -54,7 +55,7 @@ public class ProfileService {
 
         if (profile == null) {
             profile = new Profile();
-            profile.setUserId(member);
+            profile.setMember(member);
             profile.setMannerScore(75.0); // 기본값 설정
             profile.setMannerTier(Profile.Manner_tier.B); // 기본값 설정
             //profile.setNickname(member.getName());

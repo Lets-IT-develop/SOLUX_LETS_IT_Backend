@@ -6,10 +6,6 @@ import jakarta.validation.constraints.Size;
 import letsit_backend.config.MapToJsonConverter;
 
 import lombok.*;
-import org.hibernate.annotations.Type;
-
-import java.util.List;
-import java.util.Map;
 
 import java.util.Map;
 
@@ -17,7 +13,8 @@ import static letsit_backend.model.Profile.Manner_tier.B;
 import static letsit_backend.model.Profile.Manner_tier.S;
 
 @Builder
-@Getter @Setter
+@Getter
+@Setter
 @NoArgsConstructor //(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Entity
@@ -28,10 +25,11 @@ public class Profile {
 
     @OneToOne
     @JoinColumn(name = "USER_ID")
-    private Member userId;
+    private Member member;
 
     @Enumerated(EnumType.STRING)
     private Manner_tier mannerTier = B;
+
     public enum Manner_tier {
         S,
         A,
@@ -65,7 +63,7 @@ public class Profile {
     @Convert(converter = MapToJsonConverter.class)
     private Map<String, Integer> skills;
 
-    public void mannserScoreUpdate(double mannerScore) {
+    public void mannerScoreUpdate(double mannerScore) {
         this.mannerScore = mannerScore;
     }
 
