@@ -18,6 +18,9 @@ import java.util.Arrays;
 
 
 import static org.antlr.v4.runtime.misc.Utils.count;
+
+
+// TODO Enum 아래로 모아놓기, 메서드도 아래에 따로 모아놓기
 @Builder
 @Getter
 @Setter
@@ -41,6 +44,7 @@ public class Post {
 
     @Enumerated(EnumType.STRING)
     private TotalPersonnel totalPersonnel;
+
     public enum TotalPersonnel {
         TWO("2명", 2),
         THREE("3명", 3),
@@ -88,6 +92,8 @@ public class Post {
 
     @Enumerated(EnumType.STRING)
     private ProjectPeriod projectPeriod;
+
+    // TODO 한글 값과 상수명 다소 차이가 있음 -> ONE_MONTH,THREE_MONTHS, SIX_MINTHS, ONE_YEAR_PLUS로 수정 필요
     public enum ProjectPeriod {
         oneMonth("1개월"),
         twoMonths("3개월"),
@@ -118,6 +124,7 @@ public class Post {
 
     @Enumerated(EnumType.STRING)
     private Difficulty difficulty;
+
     public enum Difficulty {
         BEGINNER("입문"),
         BASIC("초급"),
@@ -152,6 +159,7 @@ public class Post {
 
     @Enumerated(EnumType.STRING)
     private OnOff onOff;
+
     public enum OnOff {
         ON("대면"),
         OFF("비대면");
@@ -192,6 +200,7 @@ public class Post {
 
     @Column(name = "category_id")
     private String categoryId;
+
     public void setCategoryId(List<String> categoryId) {
         this.categoryId = String.join(",", categoryId);
     }
@@ -215,6 +224,7 @@ public class Post {
 
     @Column(name = "stack")
     private String stack;
+
     public void setStack(List<String> stack) {
         this.stack = String.join(",", stack);
     }
@@ -225,6 +235,8 @@ public class Post {
 
 
     private String preference;
+
+    // TODO 소프트 스킬 추가 필요
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -273,6 +285,7 @@ public class Post {
             currentPersonnel++;
         }
     }
+
     public void reject(Apply apply) {
         if (!isClosed()) {
             apply.refused();

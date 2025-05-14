@@ -27,6 +27,9 @@ public class PostService {
     private final CommentRepository commentRepository;
     private final ProfileRepository profileRepository;
 
+    // TODO findBy~~ 로직 중복 -> 공통으로 뽑아낼 것
+
+    // 게시글 생성
     public PostResponseDto createPost(PostRequestDto requestDto) {
 
         Member user = memberRepository.findById(requestDto.getUserId())
@@ -61,6 +64,7 @@ public class PostService {
 
         Post savedPost = postRepository.save(post);
 
+        // TODO 리턴 타입 다른 메서드와 일치 -> 객체 생성 함수 뽑아낼 것
         return new PostResponseDto(
                 user.getUserId(),
                 savedPost.getPostId(),
@@ -97,7 +101,7 @@ public class PostService {
         Area subRegion = areaRepository.findById(postRequestDto.getSubRegionId())
                 .orElseThrow(() -> new IllegalArgumentException("Invalid sub-region ID"));
 
-
+        // TODO setter 닫고 엔티티에 수정 메서드 추가
         post.setTitle(postRequestDto.getTitle());
         post.setContent(postRequestDto.getContent());
         post.setTotalPersonnel(postRequestDto.getTotalPersonnel());
@@ -115,6 +119,7 @@ public class PostService {
 
         Post updatedPost = postRepository.save(post);
 
+        // TODO createPost return 참고
         return new PostResponseDto(
                 user.getUserId(),
                 updatedPost.getPostId(),
@@ -141,6 +146,7 @@ public class PostService {
     }
 
     public boolean deletePost(Member user, Long postId) {
+        // TODO true/false 반환하지 말고 에러 던져서 처리
         Optional<Post> optionalPost = postRepository.findById(postId);
         if (optionalPost.isPresent()) {
             Post post = optionalPost.get();
@@ -152,12 +158,14 @@ public class PostService {
         return false;
     }
 
+    // 게시글 조회
     public PostResponseDto getPostById(Long postId) {
         Optional<Post> optionalPost = postRepository.findById(postId);
         if (optionalPost.isPresent()) {
             Post post = optionalPost.get();
 
             // viewCount 증가
+            // TODO -> 엔티티에 메서드 만들어서 조회수 증가시키기
             post.setViewCount(post.getViewCount() + 1);
             postRepository.save(post);
 
@@ -171,6 +179,7 @@ public class PostService {
                     })
                     .collect(Collectors.toList());
 
+            // TODO mapTo~~
             return new PostResponseDto(
                     post.getUserId().getUserId(),
                     post.getPostId(),
@@ -199,10 +208,13 @@ public class PostService {
         }
     }
 
+    // 마감기한 지남 -> 마감처리
     @Transactional
     public boolean closePost(Long postId) {
+        // TODO Boolean 반환 제거, false 대신 오류 던지기
         Optional<Post> optionalPost = postRepository.findById(postId);
         if (optionalPost.isPresent()) {
+            // TODO 엔티티에 메서드로 상태 변경
             Post post = optionalPost.get();
             post.setDeadline(true);
             postRepository.save(post);
@@ -213,11 +225,14 @@ public class PostService {
     }
 
     // 게시글 조회 (마감되지 않은 것만)
+    // TODO 읽기 전용 트랜잭션
+    // TODO 메서드명 더 짧고 직관적이게
     public List<PostResponseDto> getAllPostsByDeadlineFalseOrderByCreatedAt() {
         List<Post> posts = postRepository.findAllByDeadlineFalseOrderByCreatedAtDesc();
         return posts.stream().map(this::convertToResponseDto).collect(Collectors.toList());
     }
 
+    // TODO 이거 다듬어서 공통 return 으로 사용
     private PostResponseDto convertToResponseDto(Post post) {
         List<CommentResponseDto> comments = commentRepository.findByPostId(post).stream()
                 .map(comment -> new CommentResponseDto(
