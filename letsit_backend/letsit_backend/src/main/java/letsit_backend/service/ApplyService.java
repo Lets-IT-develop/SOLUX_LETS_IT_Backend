@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -76,13 +77,22 @@ public class ApplyService {
     @Transactional(readOnly = true)
     public List<ApplicantProfileDto> getPendingApplicantProfiles(Long postId, Member member) {
         Post post = getPostIfOwner(postId, member);
-        List<Apply> applies = applyRepository.findByPostId(post);
+        List<Apply> applies = applyRepository.findByPostId(post)
+                .stream()
+                .filter(Apply::isNullYet)
+                .toList();
+
+        List<Member> applicants = applies.stream()
+                .map(Apply::getMember)
+                .collect(Collectors.toList());
+
+        List<Profile> profiles = profileRepository.findByUserIdIn(applicants);
+        Map<Long, Profile> profileMap = profiles.stream()
+                .collect(Collectors.toMap(p -> p.getMember().getUserId(), p -> p));
 
         return applies.stream()
-                .filter(Apply::isNullYet)
                 .map(apply -> {
-                    Member applicant = apply.getMember();
-                    Profile profile = profileRepository.findByUserId(applicant);
+                    Profile profile = profileMap.get(apply.getMember().getUserId());
                     return ApplicantProfileDto.fromEntity(profile, apply);
                 })
                 .collect(Collectors.toList());
@@ -92,13 +102,22 @@ public class ApplyService {
     @Transactional(readOnly = true)
     public List<ApplicantProfileDto> getApprovedApplicantProfiles(Long postId, Member member) {
         Post post = getPostIfOwner(postId, member);
-        List<Apply> applies = applyRepository.findByPostId(post);
+        List<Apply> applies = applyRepository.findByPostId(post)
+                .stream()
+                .filter(Apply::isApproved)
+                .toList();
+
+        List<Member> applicants = applies.stream()
+                .map(Apply::getMember)
+                .collect(Collectors.toList());
+
+        List<Profile> profiles = profileRepository.findByUserIdIn(applicants);
+        Map<Long, Profile> profileMap = profiles.stream()
+                .collect(Collectors.toMap(p -> p.getMember().getUserId(), p -> p));
 
         return applies.stream()
-                .filter(Apply::isApproved)
                 .map(apply -> {
-                    Member applicant = apply.getMember();
-                    Profile profile = profileRepository.findByUserId(applicant);
+                    Profile profile = profileMap.get(apply.getMember().getUserId());
                     return ApplicantProfileDto.fromEntity(profile, apply);
                 })
                 .collect(Collectors.toList());
