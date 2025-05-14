@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.function.Predicate;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -73,38 +74,24 @@ public class ApplyService {
     /**
      * 게시자 시점
      */
-    // 지원자 목록(프사, 닉넴) 리스트업
+    // 대기중 지원자 목록 리스트업
     @Transactional(readOnly = true)
     public List<ApplicantProfileDto> getPendingApplicantProfiles(Long postId, Member member) {
-        Post post = getPostIfOwner(postId, member);
-        List<Apply> applies = applyRepository.findByPostId(post)
-                .stream()
-                .filter(Apply::isNullYet)
-                .toList();
-
-        List<Member> applicants = applies.stream()
-                .map(Apply::getMember)
-                .collect(Collectors.toList());
-
-        List<Profile> profiles = profileRepository.findByUserIdIn(applicants);
-        Map<Long, Profile> profileMap = profiles.stream()
-                .collect(Collectors.toMap(p -> p.getMember().getUserId(), p -> p));
-
-        return applies.stream()
-                .map(apply -> {
-                    Profile profile = profileMap.get(apply.getMember().getUserId());
-                    return ApplicantProfileDto.fromEntity(profile, apply);
-                })
-                .collect(Collectors.toList());
+        return getApplicantProfilesByFilter(postId, member, Apply::isNullYet);
     }
 
     // 합류한 지원자 목록 리스트업
     @Transactional(readOnly = true)
     public List<ApplicantProfileDto> getApprovedApplicantProfiles(Long postId, Member member) {
+        return getApplicantProfilesByFilter(postId, member, Apply::isApproved);
+    }
+
+    // 지원자 프로필 리스트 취합
+    private List<ApplicantProfileDto> getApplicantProfilesByFilter(Long postId, Member member, Predicate<Apply> filter) {
         Post post = getPostIfOwner(postId, member);
         List<Apply> applies = applyRepository.findByPostId(post)
                 .stream()
-                .filter(Apply::isApproved)
+                .filter(filter)
                 .toList();
 
         List<Member> applicants = applies.stream()
