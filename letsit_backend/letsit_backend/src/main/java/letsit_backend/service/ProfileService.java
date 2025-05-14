@@ -51,7 +51,7 @@ public class ProfileService {
         }
 
          */
-        Profile profile = profileRepository.findByUserId(member);
+        Profile profile = profileRepository.findByMember(member);
 
         if (profile == null) {
             profile = new Profile();
@@ -73,7 +73,7 @@ public class ProfileService {
             throw new AccessDeniedException("You do not have permission to modify this profile");
         }
 
-        Profile profile = profileRepository.findByUserId(member);
+        Profile profile = profileRepository.findByMember(member);
         /*
         if (member == null) {
             throw new IllegalArgumentException("유효하지 않은 userId " + profileDto.getUserId());
@@ -117,7 +117,7 @@ public class ProfileService {
 
     @Transactional
     public void updateMannerTier(Member userId) {
-        Profile profile = profileRepository.findByUserId(userId);
+        Profile profile = profileRepository.findByMember(userId);
         profile.updateMannerTier();
         profileRepository.save(profile);
     }

@@ -98,7 +98,7 @@ public class ApplyService {
                 .map(Apply::getMember)
                 .collect(Collectors.toList());
 
-        List<Profile> profiles = profileRepository.findByUserIdIn(applicants);
+        List<Profile> profiles = profileRepository.findByMemberIn(applicants);
         Map<Long, Profile> profileMap = profiles.stream()
                 .collect(Collectors.toMap(p -> p.getMember().getUserId(), p -> p));
 

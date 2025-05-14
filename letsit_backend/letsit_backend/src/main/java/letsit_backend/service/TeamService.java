@@ -95,7 +95,7 @@ public class TeamService {
         List<TeamMemberLoadInfoDto> teamInfoList = teamMemberList.stream()
                 .map(teamMember -> {
                     // 프로필 url가져오기
-                    Profile profile = profileRepository.findByUserId(teamMember.getUserId());
+                    Profile profile = profileRepository.findByMember(teamMember.getUserId());
                     //
                     TeamMemberLoadInfoDto dto = new TeamMemberLoadInfoDto(
                             teamMember.getUserId().getUserId(),

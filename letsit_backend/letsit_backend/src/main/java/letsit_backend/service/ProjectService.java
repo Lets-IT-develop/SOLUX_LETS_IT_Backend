@@ -38,6 +38,7 @@ public class ProjectService {
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
     }
+
     public List<ProjectDto> getAppliedProjectsByUserId(Member member) {
         Member user = memberRepository.findById(member.getUserId())
                 .orElseThrow(() -> new IllegalArgumentException("Invalid user ID: " + member.getUserId()));
@@ -45,7 +46,7 @@ public class ProjectService {
 
         return applies.stream()
                 .filter(apply -> !apply.getPostId().isClosed())
-                .map(apply ->  convertToDto(apply.getPostId()))
+                .map(apply -> convertToDto(apply.getPostId()))
                 .collect(Collectors.toList());
 
         // TODO 그 list에서 stream()돌면서 teamPostId를 받아서 teamPost에 iscomplete가 False면 ongoing,True면 end
@@ -111,7 +112,7 @@ public class ProjectService {
     private OngoingProjectDto convertToOngoingProjectDto(TeamPost teamPost) {
         List<String> profileImages = teamMemberRepository.findByTeamId_TeamId(teamPost.getTeamId()).stream()
                 .map(teamMember -> {
-                    Profile profile = profileRepository.findByUserId(teamMember.getUserId());
+                    Profile profile = profileRepository.findByMember(teamMember.getUserId());
                     return profile != null ? profile.getProfileImageUrl() : null;
                 })
                 .collect(Collectors.toList());

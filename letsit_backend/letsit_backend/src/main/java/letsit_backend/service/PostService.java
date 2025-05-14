@@ -163,7 +163,7 @@ public class PostService {
 
             List<CommentResponseDto> comments = commentRepository.findByPostId(post).stream()
                     .map(comment -> {
-                        Profile profile = profileRepository.findByUserId(comment.getUserId());
+                        Profile profile = profileRepository.findByMember(comment.getUserId());
                         CommentResponseDto dto = new CommentResponseDto(
                                 comment,
                                 profileRepository);
