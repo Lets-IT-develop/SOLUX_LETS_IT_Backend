@@ -7,7 +7,6 @@ import lombok.Getter;
 import java.sql.Timestamp;
 
 @Getter
-@AllArgsConstructor
 public class ApplyResponseDto {
     private Long applyId;
     private Long userId;
