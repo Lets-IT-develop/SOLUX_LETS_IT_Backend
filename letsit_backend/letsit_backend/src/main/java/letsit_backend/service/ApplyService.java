@@ -47,7 +47,15 @@ public class ApplyService {
         Apply apply = request.toEntity(post, member);
         Apply submittedApply = applyRepository.save(apply);
 
-        return new ApplyResponseDto(submittedApply);
+        return ApplyResponseDto.builder()
+                .applyId(submittedApply.getApplyId())
+                .userId(submittedApply.getMember().getUserId())
+                .preferStack(submittedApply.getPreferStack())
+                .desiredField(submittedApply.getDesiredField())
+                .applyContent(submittedApply.getApplyContent())
+                .contact(submittedApply.getContact())
+                .applyCreateDate(submittedApply.getApplyCreateDate())
+                .build();
     }
 
     public ApplyResponseDto read(Long applyId, Member member) {
@@ -58,7 +66,15 @@ public class ApplyService {
             throw new AccessDeniedException("접근 권한이 없습니다.");
         }
 
-        return new ApplyResponseDto(apply);
+        return ApplyResponseDto.builder()
+                .applyId(apply.getApplyId())
+                .userId(apply.getMember().getUserId())
+                .preferStack(apply.getPreferStack())
+                .desiredField(apply.getDesiredField())
+                .applyContent(apply.getApplyContent())
+                .contact(apply.getContact())
+                .applyCreateDate(apply.getApplyCreateDate())
+                .build();
     }
 
     @Transactional
