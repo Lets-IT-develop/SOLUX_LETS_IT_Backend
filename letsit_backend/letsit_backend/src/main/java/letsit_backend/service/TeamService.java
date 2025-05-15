@@ -70,7 +70,7 @@ public class TeamService {
         // 신청 승인된자 불러오기
         List<Apply> applies = applyRepository.findAllByPostId(post);
         for (Apply applie : applies) {
-            if (applie.getConfirm()) {                // 지원서 승인된사람불러옴.
+            if (applie.getApprovalStatus()) {                // 지원서 승인된사람불러옴.
                 // 팀원목록 저장
                 Member member = applie.getMember();   // member객체소환
                 TeamMember teamMember = new TeamMember(teamPost, member, TeamMember.Role.Team_Member);
