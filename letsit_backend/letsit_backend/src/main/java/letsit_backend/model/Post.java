@@ -10,14 +10,9 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Arrays;
 
-
-import static org.antlr.v4.runtime.misc.Utils.count;
 @Builder
 @Getter
 @Setter
@@ -41,6 +36,7 @@ public class Post {
 
     @Enumerated(EnumType.STRING)
     private TotalPersonnel totalPersonnel;
+
     public enum TotalPersonnel {
         TWO("2명", 2),
         THREE("3명", 3),
@@ -88,6 +84,7 @@ public class Post {
 
     @Enumerated(EnumType.STRING)
     private ProjectPeriod projectPeriod;
+
     public enum ProjectPeriod {
         oneMonth("1개월"),
         twoMonths("3개월"),
@@ -118,6 +115,7 @@ public class Post {
 
     @Enumerated(EnumType.STRING)
     private Difficulty difficulty;
+
     public enum Difficulty {
         BEGINNER("입문"),
         BASIC("초급"),
@@ -152,6 +150,7 @@ public class Post {
 
     @Enumerated(EnumType.STRING)
     private OnOff onOff;
+
     public enum OnOff {
         ON("대면"),
         OFF("비대면");
@@ -192,6 +191,7 @@ public class Post {
 
     @Column(name = "category_id")
     private String categoryId;
+
     public void setCategoryId(List<String> categoryId) {
         this.categoryId = String.join(",", categoryId);
     }
@@ -215,6 +215,7 @@ public class Post {
 
     @Column(name = "stack")
     private String stack;
+
     public void setStack(List<String> stack) {
         this.stack = String.join(",", stack);
     }
@@ -269,13 +270,14 @@ public class Post {
 
     public void approval(Apply apply) {
         if (!isClosed() && this.totalPersonnel.getValue() > this.currentPersonnel) {
-            apply.approved();
+            apply.approve();
             currentPersonnel++;
         }
     }
+
     public void reject(Apply apply) {
         if (!isClosed()) {
-            apply.refused();
+            apply.refuse();
         }
     }
 }
