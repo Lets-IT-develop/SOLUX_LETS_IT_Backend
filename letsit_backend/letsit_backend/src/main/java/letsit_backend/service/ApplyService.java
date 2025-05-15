@@ -32,6 +32,7 @@ public class ApplyService {
     /**
      * 지원자 시점
      */
+    @Transactional
     public ApplyResponseDto create(Long postId, Member member, ApplyRequestDto request) {
         Post post = postRepository.findById(postId).orElseThrow(() -> new IllegalArgumentException("구인글이 존재하지 않습니다."));
         List<Apply> applies = applyRepository.findByPostId(post);
@@ -60,6 +61,7 @@ public class ApplyService {
         return new ApplyResponseDto(apply);
     }
 
+    @Transactional
     public void delete(Long applyId, Member member) {
         Apply apply = applyRepository.findById(applyId).orElseThrow(() -> new IllegalArgumentException("신청서가 존재하지 않습니다."));
 
@@ -75,13 +77,11 @@ public class ApplyService {
      * 게시자 시점
      */
     // 대기중 지원자 목록 리스트업
-    @Transactional(readOnly = true)
     public List<ApplicantProfileDto> getPendingApplicantProfiles(Long postId, Member member) {
         return getApplicantProfilesByFilter(postId, member, Apply::isNullYet);
     }
 
     // 합류한 지원자 목록 리스트업
-    @Transactional(readOnly = true)
     public List<ApplicantProfileDto> getApprovedApplicantProfiles(Long postId, Member member) {
         return getApplicantProfilesByFilter(postId, member, Apply::isApproved);
     }
@@ -130,6 +130,7 @@ public class ApplyService {
     }
 
     // 특정 지원자 거절 로직
+    @Transactional
     public void rejectApplicant(Long postId, Long applyId, Member member) {
         Post post = getPostIfOwner(postId, member);
         Apply apply = applyRepository.findById(applyId).orElseThrow(() -> new IllegalArgumentException("해당 지원서가 존재하지 않습니다."));
