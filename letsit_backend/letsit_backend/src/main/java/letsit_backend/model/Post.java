@@ -63,8 +63,10 @@ public class Post {
     @JoinColumn(name = "sub_region_id")
     private Area subRegion;
 
-    // TODO 다중 선택 가능 -> ManyToMany로 풀어내기
-    private String categoryId;
+    @OneToMany(mappedBy = "post",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true)
+    private List<PostCategory> postCategories = new ArrayList<>();
 
     private int viewCount;
 
@@ -188,43 +190,12 @@ public class Post {
     }
 
     // ========= Method =========
-    public void setCategoryId(List<String> categoryId) {
-        this.categoryId = String.join(",", categoryId);
-    }
-
-    public List<String> getCategoryId() {
-        return Arrays.asList(categoryId.split(","));
-    }
-
     public void setStack(List<String> stack) {
         this.stack = String.join(",", stack);
     }
 
     public List<String> getStack() {
         return Arrays.asList(stack.split(","));
-    }
-
-    // ========= 연관 관계 메서드 =========
-    // SoftSkill을 추가할 때 양쪽에 모두 등록
-    public void addSoftSkill(SoftSkill skill) {
-        PostSoftSkill link = new PostSoftSkill(this, skill);
-        postSoftSkills.add(link);
-        skill.getPostSoftSkills().add(link);
-    }
-
-    // SoftSkill을 제거할 때 양쪽에서 모두 해제
-    public void removeSoftSkill(SoftSkill skill) {
-        Iterator<PostSoftSkill> it = postSoftSkills.iterator();
-        while (it.hasNext()) {
-            PostSoftSkill link = it.next();
-            if (link.getSoftSkill().equals(skill)) {
-                it.remove();
-                skill.getPostSoftSkills().remove(link);
-                link.setPost(null);
-                link.setSoftSkill(null);
-                break;
-            }
-        }
     }
 
     // 마감여부 확인(기한 지났으면 + 마감true이면)
@@ -242,6 +213,63 @@ public class Post {
     public void reject(Apply apply) {
         if (!isClosed()) {
             apply.refused();
+        }
+    }
+
+    // ========= 연관 관계 메서드 =========
+    // 소프트스킬 추가, 삭제, 수정에 사용
+    public void syncSoftSkillsWith(List<SoftSkill> newSkills) {
+        List<SoftSkill> target = new ArrayList<>(newSkills);
+
+        // 1) 기존에 연결됐으나 target에 없는 스킬 → 삭제
+        Iterator<PostSoftSkill> iterator = postSoftSkills.iterator();
+        while (iterator.hasNext()) {
+            PostSoftSkill link = iterator.next();
+            if (!target.contains(link.getSoftSkill())) {
+                iterator.remove();
+                link.getSoftSkill().getPostSoftSkills().remove(link);
+                link.setPost(null);
+                link.setSoftSkill(null);
+            }
+        }
+
+        // 2) target에 있으나 아직 연결되지 않은 스킬 → 추가
+        for (SoftSkill skill : target) {
+            boolean exists = postSoftSkills.stream()
+                    .anyMatch(link -> link.getSoftSkill().equals(skill));
+            if (!exists) {
+                PostSoftSkill link = new PostSoftSkill(this, skill);
+                postSoftSkills.add(link);
+                skill.getPostSoftSkills().add(link);
+            }
+        }
+    }
+
+    // 카테고리 추가, 삭제, 수정에 사용
+    public void syncCategoriesWith(List<Category> newCategories) {
+        List<Category> target = new ArrayList<>(newCategories);
+
+        // 1) 삭제: 기존 연결됐으나 target에 없는 카테고리
+        Iterator<PostCategory> it = postCategories.iterator();
+        while (it.hasNext()) {
+            PostCategory link = it.next();
+            if (!target.contains(link.getCategory())) {
+                it.remove();
+                link.getCategory().getPostCategories().remove(link);
+                link.setPost(null);
+                link.setCategory(null);
+            }
+        }
+
+        // 2) 추가: target에 있으나 아직 연결되지 않은 카테고리
+        for (Category category : target) {
+            boolean exists = postCategories.stream()
+                    .anyMatch(link -> link.getCategory().equals(category));
+            if (!exists) {
+                PostCategory link = new PostCategory(this, category);
+                postCategories.add(link);
+                category.getPostCategories().add(link);
+            }
         }
     }
 }
