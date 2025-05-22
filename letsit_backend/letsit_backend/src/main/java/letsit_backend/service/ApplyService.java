@@ -3,6 +3,7 @@ package letsit_backend.service;
 import letsit_backend.dto.apply.ApplicantProfileDto;
 import letsit_backend.dto.apply.ApplyRequestDto;
 import letsit_backend.dto.apply.ApplyResponseDto;
+import letsit_backend.exception.ApplyErrorCode;
 import letsit_backend.model.Apply;
 import letsit_backend.model.Member;
 import letsit_backend.model.Post;
@@ -34,6 +35,7 @@ public class ApplyService {
      */
     @Transactional
     public ApplyResponseDto create(Long postId, Member member, ApplyRequestDto request) {
+        // TODO PostErrorCode로 처리
         Post post = postRepository.findById(postId).orElseThrow(() -> new IllegalArgumentException("구인글이 존재하지 않습니다."));
         List<Apply> applies = applyRepository.findByPostId(post);
 
@@ -41,7 +43,7 @@ public class ApplyService {
         boolean alreadyApplied = applies.stream()
                 .anyMatch(apply -> apply.getMember().equals(member));
         if (alreadyApplied) {
-            throw new IllegalArgumentException("이미 지원한 게시글입니다.");
+            throw ApplyErrorCode.ALREADY_APPLIED.getDefaultException();
         }
 
         Apply apply = request.toEntity(post, member);
@@ -59,9 +61,10 @@ public class ApplyService {
     }
 
     public ApplyResponseDto read(Long applyId, Member member) {
-        Apply apply = applyRepository.findById(applyId).orElseThrow(() -> new IllegalArgumentException("신청서가 존재하지 않습니다."));
+        Apply apply = applyRepository.findById(applyId).orElseThrow(ApplyErrorCode.APPLICATION_NOT_FOUND::getDefaultException);
 
         // 요청한 사람이 지원자 || 게시자 인지 확인
+        // TODO UserErrorCode로 처리
         if (!member.equals(apply.getMember()) && !member.equals(apply.getPostId().getUserId())) {
             throw new AccessDeniedException("접근 권한이 없습니다.");
         }
@@ -79,8 +82,9 @@ public class ApplyService {
 
     @Transactional
     public void delete(Long applyId, Member member) {
-        Apply apply = applyRepository.findById(applyId).orElseThrow(() -> new IllegalArgumentException("신청서가 존재하지 않습니다."));
+        Apply apply = applyRepository.findById(applyId).orElseThrow(ApplyErrorCode.APPLICATION_NOT_FOUND::getDefaultException);
 
+        // TODO UserErrorCode로 처리
         if (!member.equals(apply.getMember())) {
             throw new AccessDeniedException("접근 권한이 없습니다.");
         }
@@ -138,7 +142,7 @@ public class ApplyService {
     @Transactional
     public void approveApplicant(Long postId, Long applyId, Member member) {
         Post post = getPostIfOwner(postId, member);
-        Apply apply = applyRepository.findById(applyId).orElseThrow(() -> new IllegalArgumentException("해당 지원서가 존재하지 않습니다."));
+        Apply apply = applyRepository.findById(applyId).orElseThrow(ApplyErrorCode.APPLICATION_NOT_FOUND::getDefaultException);
 
         post.approval(apply);
         applyRepository.save(apply);
@@ -149,7 +153,7 @@ public class ApplyService {
     @Transactional
     public void rejectApplicant(Long postId, Long applyId, Member member) {
         Post post = getPostIfOwner(postId, member);
-        Apply apply = applyRepository.findById(applyId).orElseThrow(() -> new IllegalArgumentException("해당 지원서가 존재하지 않습니다."));
+        Apply apply = applyRepository.findById(applyId).orElseThrow(ApplyErrorCode.APPLICATION_NOT_FOUND::getDefaultException);
 
         post.reject(apply);
         applyRepository.save(apply);
@@ -158,6 +162,7 @@ public class ApplyService {
     // 게시글 존재 여부 && 게시자 일치 여부 검증
     private Post getPostIfOwner(Long postId, Member member) {
         Post post = postRepository.findById(postId).orElseThrow(() -> new IllegalArgumentException("해당 구인글이 존재하지 않습니다."));
+        // TODO UserErrorCode로 처리
         if (!member.equals(post.getUserId())) {
             throw new AccessDeniedException("접근 권한이 없습니다.");
         }
