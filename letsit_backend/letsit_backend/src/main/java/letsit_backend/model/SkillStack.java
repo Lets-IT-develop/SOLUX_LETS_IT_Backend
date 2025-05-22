@@ -14,7 +14,7 @@ import java.util.List;
 public class SkillStack {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long stackId;
+    private Long skillStackId;
 
     @Column(nullable = false)
     private String stackName;

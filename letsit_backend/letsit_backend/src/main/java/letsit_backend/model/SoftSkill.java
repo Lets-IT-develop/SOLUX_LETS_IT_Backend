@@ -16,7 +16,7 @@ public class SoftSkill {
     private Long softSkillId;
 
     @Column(nullable = false)
-    private String skillName;
+    private String softSkillName;
 
     @OneToMany(mappedBy = "softSkill",
             cascade = CascadeType.ALL,

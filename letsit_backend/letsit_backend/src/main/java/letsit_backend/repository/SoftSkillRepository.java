@@ -9,5 +9,5 @@ import java.util.List;
 
 @Repository
 public interface SoftSkillRepository extends JpaRepository<SoftSkill, Long> {
-    List<SoftSkill> findAllBySkillNameIn(Collection<String> names);
+    List<SoftSkill> findAllBySoftSkillNameIn(Collection<String> names);
 }
