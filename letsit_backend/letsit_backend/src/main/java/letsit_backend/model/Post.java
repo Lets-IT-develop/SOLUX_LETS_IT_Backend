@@ -13,6 +13,7 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 @Builder
@@ -83,8 +84,9 @@ public class Post {
 
     private String preference;
 
-    // TODO 다중 선택 가능 -> ManyToMany로 풀어내기, Enum 제거?
-    @OneToMany(mappedBy = "post")
+    @OneToMany(mappedBy = "post",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true)
     private List<PostSoftSkill> postSoftSkills = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
@@ -202,25 +204,27 @@ public class Post {
         return Arrays.asList(stack.split(","));
     }
 
+    // ========= 연관 관계 메서드 =========
+    // SoftSkill을 추가할 때 양쪽에 모두 등록
     public void addSoftSkill(SoftSkill skill) {
-        PostSoftSkill link = PostSoftSkill.builder()
-                .post(this)
-                .softSkill(skill)
-                .build();
+        PostSoftSkill link = new PostSoftSkill(this, skill);
         postSoftSkills.add(link);
         skill.getPostSoftSkills().add(link);
     }
 
+    // SoftSkill을 제거할 때 양쪽에서 모두 해제
     public void removeSoftSkill(SoftSkill skill) {
-        postSoftSkills.removeIf(link -> {
+        Iterator<PostSoftSkill> it = postSoftSkills.iterator();
+        while (it.hasNext()) {
+            PostSoftSkill link = it.next();
             if (link.getSoftSkill().equals(skill)) {
+                it.remove();
                 skill.getPostSoftSkills().remove(link);
                 link.setPost(null);
                 link.setSoftSkill(null);
-                return true;
+                break;
             }
-            return false;
-        });
+        }
     }
 
     // 마감여부 확인(기한 지났으면 + 마감true이면)

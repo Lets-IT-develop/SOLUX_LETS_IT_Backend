@@ -9,9 +9,7 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class SoftSkill {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,6 +18,8 @@ public class SoftSkill {
     @Column(nullable = false)
     private String skillName;
 
-    @OneToMany(mappedBy = "softSkill")
+    @OneToMany(mappedBy = "softSkill",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true)
     private List<PostSoftSkill> postSoftSkills = new ArrayList<>();
 }
