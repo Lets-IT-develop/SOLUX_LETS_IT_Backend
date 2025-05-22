@@ -3,6 +3,7 @@ package letsit_backend.model;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import jakarta.persistence.*;
+import letsit_backend.dto.post.KoreanEnum;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
@@ -10,17 +11,10 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Arrays;
 
-
-import static org.antlr.v4.runtime.misc.Utils.count;
-
-
-// TODO Enum 아래로 모아놓기, 메서드도 아래에 따로 모아놓기
 @Builder
 @Getter
 @Setter
@@ -32,7 +26,7 @@ public class Post {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long postId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "USER_ID")
     private Member userId;
 
@@ -45,169 +39,31 @@ public class Post {
     @Enumerated(EnumType.STRING)
     private TotalPersonnel totalPersonnel;
 
-    public enum TotalPersonnel {
-        TWO("2명", 2),
-        THREE("3명", 3),
-        FOUR("4명", 4),
-        FIVE("5명", 5),
-        SIX("6명", 6),
-        SEVEN("7명", 7),
-        EIGHT("8명", 8);
-
-        private final String korean;
-        private final int value;
-
-        TotalPersonnel(String korean, int value) {
-            this.korean = korean;
-            this.value = value;
-        }
-
-        @JsonValue
-        public String getKorean() {
-            return korean;
-        }
-
-        public int getValue() {
-            return value;
-        }
-
-        @JsonCreator
-        public static TotalPersonnel fromKorean(String korean) {
-            for (TotalPersonnel num : TotalPersonnel.values()) {
-                if (num.korean.equals(korean)) {
-                    return num;
-                }
-            }
-            throw new IllegalArgumentException("Unknown enum value: " + korean);
-        }
-    }
-
-
     @ColumnDefault("0")
     private int currentPersonnel;
 
-    // TODO 기간어떻게받을지...
     @Column(nullable = false)
     private LocalDate recruitDueDate;
 
     @Enumerated(EnumType.STRING)
     private ProjectPeriod projectPeriod;
 
-    // TODO 한글 값과 상수명 다소 차이가 있음 -> ONE_MONTH,THREE_MONTHS, SIX_MINTHS, ONE_YEAR_PLUS로 수정 필요
-    public enum ProjectPeriod {
-        oneMonth("1개월"),
-        twoMonths("3개월"),
-        threeMonths("6개월"),
-        fourMonths("1년 이상");
-
-        private final String korean;
-
-        ProjectPeriod(String korean) {
-            this.korean = korean;
-        }
-
-        @JsonValue
-        public String getKorean() {
-            return korean;
-        }
-
-        @JsonCreator
-        public static ProjectPeriod fromKorean(String korean) {
-            for (ProjectPeriod period : ProjectPeriod.values()) {
-                if (period.korean.equals(korean)) {
-                    return period;
-                }
-            }
-            throw new IllegalArgumentException("Unknown enum value: " + korean);
-        }
-    }
-
     @Enumerated(EnumType.STRING)
     private Difficulty difficulty;
-
-    public enum Difficulty {
-        BEGINNER("입문"),
-        BASIC("초급"),
-        MID("중급"),
-        ADVANCED("고급");
-
-        private final String korean;
-
-        Difficulty(String korean) {
-            this.korean = korean;
-        }
-
-        @JsonValue
-        public String getKorean() {
-            return korean;
-        }
-
-        @JsonCreator
-        public static Difficulty fromKorean(String korean) {
-            if (korean == null || korean.isEmpty()) {
-                throw new IllegalArgumentException("Empty string is not a valid value for Difficulty");
-            }
-            for (Difficulty difficulty : Difficulty.values()) {
-                if (difficulty.korean.equals(korean)) {
-                    return difficulty;
-                }
-            }
-            throw new IllegalArgumentException("Unknown enum value: " + korean);
-        }
-    }
-
 
     @Enumerated(EnumType.STRING)
     private OnOff onOff;
 
-    public enum OnOff {
-        ON("대면"),
-        OFF("비대면");
-
-        private final String korean;
-
-        OnOff(String korean) {
-            this.korean = korean;
-        }
-
-        @JsonValue
-        public String getKorean() {
-            return korean;
-        }
-
-        @JsonCreator
-        public static OnOff fromKorean(String korean) {
-            if (korean == null || korean.isEmpty()) {
-                throw new IllegalArgumentException("Empty string is not a valid value for OnOff");
-            }
-            for (OnOff onOff : OnOff.values()) {
-                if (onOff.korean.equals(korean)) {
-                    return onOff;
-                }
-            }
-            throw new IllegalArgumentException("Unknown enum value: " + korean);
-        }
-    }
-
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "region_id")
     private Area region;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sub_region_id")
     private Area subRegion;
 
-
-    @Column(name = "category_id")
+    // TODO 다중 선택 가능 -> ManyToMany로 풀어내기
     private String categoryId;
-
-    public void setCategoryId(List<String> categoryId) {
-        this.categoryId = String.join(",", categoryId);
-    }
-
-    public List<String> getCategoryId() {
-        return Arrays.asList(categoryId.split(","));
-    }
 
     private int viewCount;
 
@@ -225,53 +81,142 @@ public class Post {
     @Column(name = "stack")
     private String stack;
 
+    private String preference;
+
+    // TODO 다중 선택 가능 -> ManyToMany로 풀어내기, Enum 제거?
+    @Enumerated(EnumType.STRING)
+    private SoftSkill softSkill;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private AgeGroup ageGroup;
+
+    // ========= Enum =========
+
+    // 인원
+    @AllArgsConstructor
+    @Getter
+    public enum TotalPersonnel implements KoreanEnum {
+        TWO("2명", 2),
+        THREE("3명", 3),
+        FOUR("4명", 4),
+        FIVE("5명", 5),
+        SIX("6명", 6),
+        SEVEN("7명", 7),
+        EIGHT("8명", 8);
+
+        @JsonValue
+        private final String korean;
+        private final int value;
+
+        @JsonCreator
+        public static TotalPersonnel fromKorean(String korean) {
+            return KoreanEnum.fromKorean(TotalPersonnel.class, korean);
+        }
+    }
+
+    // 프로젝트 기간
+    @AllArgsConstructor
+    @Getter
+    public enum ProjectPeriod implements KoreanEnum {
+        ONE_MONTH("1개월"),
+        THREE_MONTHS("3개월"),
+        SIX_MONTHS("6개월"),
+        ONE_YEAR_PLUS("1년 이상");
+
+        @JsonValue
+        private final String korean;
+
+        @JsonCreator
+        public static ProjectPeriod fromKorean(String korean) {
+            return KoreanEnum.fromKorean(ProjectPeriod.class, korean);
+        }
+    }
+
+    // 난이도
+    @AllArgsConstructor
+    @Getter
+    public enum Difficulty implements KoreanEnum {
+        BEGINNER("입문"),
+        BASIC("초급"),
+        MID("중급"),
+        ADVANCED("고급");
+
+        @JsonValue
+        private final String korean;
+
+        @JsonCreator
+        public static Difficulty fromKorean(String korean) {
+            return KoreanEnum.fromKorean(Difficulty.class, korean);
+        }
+    }
+
+    // 대면/비대면
+    @AllArgsConstructor
+    @Getter
+    public enum OnOff implements KoreanEnum {
+        ON("대면"),
+        OFF("비대면");
+
+        @JsonValue
+        private final String korean;
+
+        @JsonCreator
+        public static OnOff fromKorean(String korean) {
+            return KoreanEnum.fromKorean(OnOff.class, korean);
+        }
+    }
+
+    // 소프트 스킬
+    @AllArgsConstructor
+    @Getter
+    public enum SoftSkill implements KoreanEnum {
+        SKILL_ONE("~~~~"),
+        SKILL_TWO("----"),
+        OTHER("기타");
+
+        @JsonValue
+        private final String korean;
+
+        @JsonCreator
+        public static SoftSkill fromKorean(String korean) {
+            return KoreanEnum.fromKorean(SoftSkill.class, korean);
+        }
+    }
+
+    // 연령대
+    @AllArgsConstructor
+    @Getter
+    public enum AgeGroup implements KoreanEnum {
+        S10("10대"),
+        S20A("20대"),
+        S20B("30대"),
+        S20C("40대 이상");
+
+        @JsonValue
+        private final String korean;
+
+        @JsonCreator
+        public static AgeGroup fromKorean(String korean) {
+            return KoreanEnum.fromKorean(AgeGroup.class, korean);
+        }
+    }
+
+    // ========= Method =========
+    public void setCategoryId(List<String> categoryId) {
+        this.categoryId = String.join(",", categoryId);
+    }
+
+    public List<String> getCategoryId() {
+        return Arrays.asList(categoryId.split(","));
+    }
+
     public void setStack(List<String> stack) {
         this.stack = String.join(",", stack);
     }
 
     public List<String> getStack() {
         return Arrays.asList(stack.split(","));
-    }
-
-
-    private String preference;
-
-    // TODO 소프트 스킬 추가 필요
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private AgeGroup ageGroup;
-
-    public enum AgeGroup {
-        S10("10대"),
-        S20A("20대"),
-        S20B("30대"),
-        S20C("40대 이상");
-
-        private final String korean;
-
-        AgeGroup(String korean) {
-            this.korean = korean;
-        }
-
-        @JsonValue
-        public String getKorean() {
-            return korean;
-        }
-
-        @JsonCreator
-        public static AgeGroup fromKorean(String korean) {
-            for (AgeGroup ageGroup : AgeGroup.values()) {
-                if (ageGroup.korean.equals(korean)) {
-                    return ageGroup;
-                }
-            }
-            throw new IllegalArgumentException("Unknown enum value: " + korean);
-        }
-    }
-
-    public void setDeadline(Boolean deadline) {
-        this.deadline = deadline;
     }
 
     // 마감여부 확인(기한 지났으면 + 마감true이면)
