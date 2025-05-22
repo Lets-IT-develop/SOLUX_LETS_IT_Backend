@@ -81,8 +81,10 @@ public class Post {
     @Column(nullable = false)
     private Boolean deadline;
 
-    @Column(name = "stack")
-    private String stack;
+    @OneToMany(mappedBy = "post",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true)
+    private List<PostSkillStack> postSkillStacks = new ArrayList<>();
 
     private String preference;
 
@@ -190,14 +192,6 @@ public class Post {
     }
 
     // ========= Method =========
-    public void setStack(List<String> stack) {
-        this.stack = String.join(",", stack);
-    }
-
-    public List<String> getStack() {
-        return Arrays.asList(stack.split(","));
-    }
-
     // 마감여부 확인(기한 지났으면 + 마감true이면)
     public boolean isClosed() {
         return this.recruitDueDate.isBefore(LocalDate.now()) || this.deadline;
@@ -269,6 +263,34 @@ public class Post {
                 PostCategory link = new PostCategory(this, category);
                 postCategories.add(link);
                 category.getPostCategories().add(link);
+            }
+        }
+    }
+
+    // 기술스택 추가, 삭제, 수정에 사용
+    public void syncSkillStacksWith(List<SkillStack> newStacks) {
+        List<SkillStack> target = new ArrayList<>(newStacks);
+
+        // 1) 삭제
+        Iterator<PostSkillStack> it = postSkillStacks.iterator();
+        while (it.hasNext()) {
+            PostSkillStack link = it.next();
+            if (!target.contains(link.getSkillStack())) {
+                it.remove();
+                link.getSkillStack().getPostStacks().remove(link);
+                link.setPost(null);
+                link.setSkillStack(null);
+            }
+        }
+
+        // 2) 추가
+        for (SkillStack stack : target) {
+            boolean exists = postSkillStacks.stream()
+                    .anyMatch(link -> link.getSkillStack().equals(stack));
+            if (!exists) {
+                PostSkillStack link = new PostSkillStack(this, stack);
+                postSkillStacks.add(link);
+                stack.getPostStacks().add(link);
             }
         }
     }
