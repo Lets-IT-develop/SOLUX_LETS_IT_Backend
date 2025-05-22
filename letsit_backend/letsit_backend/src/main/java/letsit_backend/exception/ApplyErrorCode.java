@@ -14,14 +14,4 @@ public enum ApplyErrorCode implements ErrorCode {
 
     private final HttpStatus status;
     private final String message;
-
-    @Override
-    public RuntimeException getDefaultException() {
-        return new CustomException(this);
-    }
-
-    @Override
-    public RuntimeException getDefaultException(Throwable cause) {
-        return new CustomException(this, cause);
-    }
 }

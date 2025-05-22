@@ -9,7 +9,11 @@ public interface ErrorCode {
 
     String getMessage();
 
-    RuntimeException getDefaultException();
+    default RuntimeException getDefaultException() {
+        return new CustomException(this);
+    }
 
-    RuntimeException getDefaultException(Throwable cause);
+    default RuntimeException getDefaultException(Throwable cause) {
+        return new CustomException(this, cause);
+    }
 }
