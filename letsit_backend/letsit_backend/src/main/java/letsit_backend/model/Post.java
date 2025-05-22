@@ -84,8 +84,8 @@ public class Post {
     private String preference;
 
     // TODO 다중 선택 가능 -> ManyToMany로 풀어내기, Enum 제거?
-    @Enumerated(EnumType.STRING)
-    private SoftSkill softSkill;
+    @OneToMany(mappedBy = "post")
+    private List<PostSoftSkill> postSoftSkills = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -167,23 +167,6 @@ public class Post {
         }
     }
 
-    // 소프트 스킬
-    @AllArgsConstructor
-    @Getter
-    public enum SoftSkill implements KoreanEnum {
-        SKILL_ONE("~~~~"),
-        SKILL_TWO("----"),
-        OTHER("기타");
-
-        @JsonValue
-        private final String korean;
-
-        @JsonCreator
-        public static SoftSkill fromKorean(String korean) {
-            return KoreanEnum.fromKorean(SoftSkill.class, korean);
-        }
-    }
-
     // 연령대
     @AllArgsConstructor
     @Getter
@@ -217,6 +200,27 @@ public class Post {
 
     public List<String> getStack() {
         return Arrays.asList(stack.split(","));
+    }
+
+    public void addSoftSkill(SoftSkill skill) {
+        PostSoftSkill link = PostSoftSkill.builder()
+                .post(this)
+                .softSkill(skill)
+                .build();
+        postSoftSkills.add(link);
+        skill.getPostSoftSkills().add(link);
+    }
+
+    public void removeSoftSkill(SoftSkill skill) {
+        postSoftSkills.removeIf(link -> {
+            if (link.getSoftSkill().equals(skill)) {
+                skill.getPostSoftSkills().remove(link);
+                link.setPost(null);
+                link.setSoftSkill(null);
+                return true;
+            }
+            return false;
+        });
     }
 
     // 마감여부 확인(기한 지났으면 + 마감true이면)
