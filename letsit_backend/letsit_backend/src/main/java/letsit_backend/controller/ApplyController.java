@@ -23,12 +23,14 @@ public class ApplyController {
     private final ApplyService applyService;
 
     @PostMapping(value = "/{postId}/write")
+    @ResponseStatus(HttpStatus.CREATED)
     public Response<ApplyResponseDto> postNewApply(@PathVariable("postId") Long postId, @CurrentUser Member member, @RequestBody ApplyRequestDto request) {
         ApplyResponseDto submittedApply = applyService.create(postId, member, request);
         return Response.success("성공", submittedApply);
     }
 
     @GetMapping("/{applyId}")
+    @ResponseStatus(HttpStatus.OK)
     public Response<ApplyResponseDto> getApply(@PathVariable("applyId") Long applyId, @CurrentUser Member member) {
         ApplyResponseDto apply = applyService.read(applyId, member);
         return Response.success("지원서 보기", apply);
@@ -36,6 +38,8 @@ public class ApplyController {
 
 
     @DeleteMapping("/{applyId}/delete")
+    // TODO 204는 응답 데이터가 없어야 함. 프론트와 상의 후 응답 코드 결정할 것.
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public Response<String> deleteApply(@PathVariable("applyId") Long applyId, @CurrentUser Member member) {
         if (member == null) {
             return Response.fail("미인증 회원");
@@ -45,6 +49,7 @@ public class ApplyController {
     }
 
     @GetMapping(value = "/{postId}/list")
+    @ResponseStatus(HttpStatus.OK)
     public Response<List<ApplicantProfileDto>> getApplicantList(@PathVariable("postId") Long postId, @CurrentUser Member member) {
         if (member == null) {
             return Response.fail("미인증 회원");
@@ -54,25 +59,26 @@ public class ApplyController {
     }
 
     @GetMapping(value = "/{postId}/approvedlist")
+    @ResponseStatus(HttpStatus.OK)
     public Response<List<ApplicantProfileDto>> getApprovedApplicantList(@PathVariable("postId") Long postId, @CurrentUser Member member) {
         List<ApplicantProfileDto> approved = applyService.getApprovedApplicantProfiles(postId, member);
         return Response.success("승인된 지원자 리스트", approved);
     }
 
 
-    @GetMapping(value = "/{postId}/list/{applyId}/approval")
+    @PatchMapping(value = "/{postId}/list/{applyId}/approval")
+    // TODO 204는 응답 데이터가 없어야 함. 프론트와 상의 후 응답 코드 결정할 것.
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public Response<String> approvalApplicant(@PathVariable("postId") Long postId, @PathVariable("applyId") Long applyId, @CurrentUser Member member) {
         applyService.approveApplicant(postId, applyId, member);
-        // log.info("Approval request received for Post ID: {} and Apply ID: {}", postId, applyId);
-        // log.info("Application approved successfully for Apply ID: {}", applyId);
         return Response.success("지원서가 승인되었습니다.", null);
     }
 
-    @GetMapping(value = "/{postId}/list/{applyId}/reject")
-    public ResponseEntity<String> rejectionApplicant(@PathVariable("postId") Long postId, @PathVariable("applyId") Long applyId, @CurrentUser Member member) {
+    @PatchMapping(value = "/{postId}/list/{applyId}/reject")
+    // TODO 204는 응답 데이터가 없어야 함. 프론트와 상의 후 응답 코드 결정할 것.
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public Response<String> rejectionApplicant(@PathVariable("postId") Long postId, @PathVariable("applyId") Long applyId, @CurrentUser Member member) {
         applyService.rejectApplicant(postId, applyId, member);
-        // log.info("Approval request received for Post ID: {} and Apply ID: {}", postId, applyId);
-        // log.info("Application approved successfully for Apply ID: {}", applyId);
-        return ResponseEntity.status(HttpStatus.OK).body("지원서가 거절되었습니다.");
+        return Response.success("지원서가 거절되었습니다.", null);
     }
 }
