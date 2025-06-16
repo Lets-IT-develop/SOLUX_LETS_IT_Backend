@@ -14,6 +14,9 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 @Builder
 @Getter
@@ -212,85 +215,87 @@ public class Post {
     // ========= 연관 관계 메서드 =========
     // 소프트스킬 추가, 삭제, 수정에 사용
     public void syncSoftSkillsWith(List<SoftSkill> newSkills) {
-        List<SoftSkill> target = new ArrayList<>(newSkills);
-
-        // 1) 기존에 연결됐으나 target에 없는 스킬 → 삭제
-        Iterator<PostSoftSkill> iterator = postSoftSkills.iterator();
-        while (iterator.hasNext()) {
-            PostSoftSkill link = iterator.next();
-            if (!target.contains(link.getSoftSkill())) {
-                iterator.remove();
-                link.getSoftSkill().getPostSoftSkills().remove(link);
-                link.setPost(null);
-                link.setSoftSkill(null);
-            }
-        }
-
-        // 2) target에 있으나 아직 연결되지 않은 스킬 → 추가
-        for (SoftSkill skill : target) {
-            boolean exists = postSoftSkills.stream()
-                    .anyMatch(link -> link.getSoftSkill().equals(skill));
-            if (!exists) {
-                PostSoftSkill link = new PostSoftSkill(this, skill);
-                postSoftSkills.add(link);
-                skill.getPostSoftSkills().add(link);
-            }
-        }
+        syncLinks(
+                postSoftSkills, // 현재 연결된 소프트스킬 리스트
+                newSkills, // 새로 연결할 소프트스킬 리스트
+                PostSoftSkill::getSoftSkill, // 기존 연결에서 SoftSkill 추출
+                PostSoftSkill::new, // 새 PostSoftSkill 생성
+                link -> { // 제거 시 역방향 정리
+                    link.getSoftSkill().getPostSoftSkills().remove(link);
+                    link.setPost(null);
+                    link.setSoftSkill(null);
+                }
+        );
     }
 
     // 카테고리 추가, 삭제, 수정에 사용
     public void syncCategoriesWith(List<Category> newCategories) {
-        List<Category> target = new ArrayList<>(newCategories);
-
-        // 1) 삭제: 기존 연결됐으나 target에 없는 카테고리
-        Iterator<PostCategory> it = postCategories.iterator();
-        while (it.hasNext()) {
-            PostCategory link = it.next();
-            if (!target.contains(link.getCategory())) {
-                it.remove();
-                link.getCategory().getPostCategories().remove(link);
-                link.setPost(null);
-                link.setCategory(null);
-            }
-        }
-
-        // 2) 추가: target에 있으나 아직 연결되지 않은 카테고리
-        for (Category category : target) {
-            boolean exists = postCategories.stream()
-                    .anyMatch(link -> link.getCategory().equals(category));
-            if (!exists) {
-                PostCategory link = new PostCategory(this, category);
-                postCategories.add(link);
-                category.getPostCategories().add(link);
-            }
-        }
+        syncLinks(
+                postCategories, // 현재 연결된 카테고리 리스트
+                newCategories, // 새로 연결할 카테고리 리스트
+                PostCategory::getCategory, // 기존 연결에서 Category 추출
+                PostCategory::new, // 새 PostCategory 생성
+                link -> { // 제거 시 역방향 정리
+                    link.getCategory().getPostCategories().remove(link);
+                    link.setPost(null);
+                    link.setCategory(null);
+                }
+        );
     }
 
     // 기술스택 추가, 삭제, 수정에 사용
     public void syncSkillStacksWith(List<SkillStack> newStacks) {
-        List<SkillStack> target = new ArrayList<>(newStacks);
+        syncLinks(
+                postSkillStacks,           // 현재 연결 리스트
+                newStacks,                 // 새로 연결할 대상 리스트
+                PostSkillStack::getSkillStack,  // 기존 연결에서 SkillStack 추출
+                PostSkillStack::new,            // 새 PostSkillStack 생성
+                link -> {                      // 제거 시 역방향 정리
+                    link.getSkillStack().getPostStacks().remove(link);
+                    link.setPost(null);
+                    link.setSkillStack(null);
+                }
+        );
+    }
 
-        // 1) 삭제
-        Iterator<PostSkillStack> it = postSkillStacks.iterator();
-        while (it.hasNext()) {
-            PostSkillStack link = it.next();
-            if (!target.contains(link.getSkillStack())) {
-                it.remove();
-                link.getSkillStack().getPostStacks().remove(link);
-                link.setPost(null);
-                link.setSkillStack(null);
+    // 연관 관계 동기화 메서드 공통 로직 분리
+
+    /**
+     * 기존 연관관계 리스트(existingLinks)를 새로운 리스트(newItems)로 동기화한다.
+     * 삭제 대상은 지우고, 추가 대상은 새로 연결 객체를 만들어 추가한다.
+     *
+     * @param existingLinks 현재 Post와 연결된 중간 엔티티 리스트 (ex: postSkillStacks)
+     * @param newItems      새롭게 설정할 대상 리스트 (ex: List<SkillStack>)
+     * @param getItem       중간 엔티티에서 실제 참조 대상(T)을 추출하는 getter (ex: PostSkillStack::getSkillStack)
+     * @param createLink    Post와 대상 T로부터 중간 엔티티를 생성하는 함수 (ex: new PostSkillStack(this, stack))
+     * @param removeLink    연결 해제 시 후처리 로직 (양방향 관계 끊기, null 처리 등)
+     */
+    private <T, L> void syncLinks(
+            List<L> existingLinks,
+            List<T> newItems,
+            Function<L, T> getItem,
+            BiFunction<Post, T, L> createLink,
+            Consumer<L> removeLink
+    ) {
+        // 1. 삭제 단계: 기존 연결 중 newItems에 포함되지 않은 항목 제거
+        Iterator<L> iterator = existingLinks.iterator();
+        while (iterator.hasNext()) {
+            L link = iterator.next();
+            if (!newItems.contains(getItem.apply(link))) {
+                iterator.remove();     // 현재 Post → 해당 연결 제거
+                removeLink.accept(link); // 역방향(SoftSkill, Category 등)에서도 제거 처리
             }
         }
 
-        // 2) 추가
-        for (SkillStack stack : target) {
-            boolean exists = postSkillStacks.stream()
-                    .anyMatch(link -> link.getSkillStack().equals(stack));
+        // 2. 추가 단계: newItems 중 아직 연결되지 않은 항목을 새로 추가
+        for (T item : newItems) {
+            boolean exists = existingLinks.stream()
+                    .anyMatch(link -> getItem.apply(link).equals(item));
             if (!exists) {
-                PostSkillStack link = new PostSkillStack(this, stack);
-                postSkillStacks.add(link);
-                stack.getPostStacks().add(link);
+                L newLink = createLink.apply(this, item); // 새 연결 객체 생성
+                existingLinks.add(newLink);               // 현재 Post에 추가
             }
         }
     }
+
 }
