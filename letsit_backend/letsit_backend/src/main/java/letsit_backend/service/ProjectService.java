@@ -33,7 +33,7 @@ public class ProjectService {
     public List<ProjectDto> getProjectsByUserId(Member member) {
         Member user = memberRepository.findById(member.getUserId())
                 .orElseThrow(() -> new IllegalArgumentException("Invalid user ID: " + member.getUserId()));
-        List<Post> posts = postRepository.findByUserIdAndDeadlineFalse(user);
+        List<Post> posts = postRepository.findByMemberAndDeadlineFalse(user);
         return posts.stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
@@ -126,7 +126,9 @@ public class ProjectService {
         projectDto.setRegionId(post.getRegion().getName());
         projectDto.setSubRegionId(post.getSubRegion().getName());
         projectDto.setOnoff(post.getOnOff().getKorean());
-        projectDto.setStack(post.getStack());
+        projectDto.setStack(post.getPostSkillStacks().stream()
+                .map(pss -> pss.getSkillStack().getStackName())
+                .toList());
         projectDto.setDifficulty(post.getDifficulty().getKorean());
         projectDto.setUserId(post.getMember().getUserId());
         projectDto.setProjectPeriod(post.getProjectPeriod().getKorean());
