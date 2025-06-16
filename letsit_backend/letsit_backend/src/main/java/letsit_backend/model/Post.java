@@ -194,6 +194,16 @@ public class Post {
     }
 
     // ========= Method =========
+    // 조회수 증가
+    public void increaseViewCount() {
+        this.viewCount += 1;
+    }
+
+    // 마감 처리
+    public void setClosed() {
+        this.deadline = true;
+    }
+
     // 마감여부 확인(기한 지났으면 + 마감true이면)
     public boolean isClosed() {
         return this.recruitDueDate.isBefore(LocalDate.now()) || this.deadline;
