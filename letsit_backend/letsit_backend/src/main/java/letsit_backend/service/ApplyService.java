@@ -10,7 +10,6 @@ import letsit_backend.model.Member;
 import letsit_backend.model.Post;
 import letsit_backend.model.Profile;
 import letsit_backend.repository.ApplyRepository;
-import letsit_backend.repository.MemberRepository;
 import letsit_backend.repository.PostRepository;
 import letsit_backend.repository.ProfileRepository;
 import lombok.RequiredArgsConstructor;
@@ -75,8 +74,8 @@ public class ApplyService {
     public List<ApplicantProfileDto> getApplicantProfiles(Long postId, Member member) {
         Post post = postRepository.findById(postId).orElseThrow(() -> new IllegalArgumentException("구인글이 존재하지 않습니다."));
         log.info(member.getUserId().toString());
-        log.info(post.getUserId().getUserId().toString());
-        if (!member.getUserId().equals(post.getUserId().getUserId())) {
+        log.info(post.getMember().getUserId().toString());
+        if (!member.getUserId().equals(post.getMember().getUserId())) {
             throw new AccessDeniedException("접근 권한이 없습니다.");
         }
         List<Apply> applies = applyRepository.findByPostId(post);
@@ -84,7 +83,7 @@ public class ApplyService {
         log.info("Applicants for post Id : {}", postId);
         return applies.stream()
                 .filter(Apply::isNullYet)
-                .map(apply-> {
+                .map(apply -> {
                     Member applicant = apply.getUserId();
                     Profile profile = profileRepository.findByUserId(applicant);
                     return ApplicantProfileDto.fromEntity(profile, apply);
@@ -95,7 +94,7 @@ public class ApplyService {
     @Transactional(readOnly = true)
     public List<ApplicantProfileDto> getApprovedApplicantProfiles(Long postId, Member member) {
         Post post = postRepository.findById(postId).orElseThrow(() -> new IllegalArgumentException("Invalid post ID"));
-        if (!member.getUserId().equals(post.getUserId().getUserId())) {
+        if (!member.getUserId().equals(post.getMember().getUserId())) {
             throw new AccessDeniedException("접근 권한이 없습니다.");
         }
         List<Apply> applies = applyRepository.findByPostId(post);
@@ -114,7 +113,7 @@ public class ApplyService {
     public void approveApplicant(Long postId, Long applyId, Member member) {
         // log.info("Approving application. Post ID: {}, Apply ID: {}", postId, applyId);
         Post post = postRepository.findById(postId).orElseThrow(() -> new IllegalArgumentException("해당 구인글이 존재하지 않습니다."));
-        if (!member.getUserId().equals(post.getUserId().getUserId())) {
+        if (!member.getUserId().equals(post.getMember().getUserId())) {
             throw new AccessDeniedException("접근 권한이 없습니다.");
         }
         Apply apply = applyRepository.findById(applyId).orElseThrow(() -> new IllegalArgumentException("해당 지원서가 존재하지 않습니다."));
@@ -123,10 +122,11 @@ public class ApplyService {
         applyRepository.save(apply);
         log.info("Application approved. Apply ID: {}", applyId);
     }
+
     // 특정 지원자 거절 로직
     public void rejectApplicant(Long postId, Long applyId, Member member) {
         Post post = postRepository.findById(postId).orElseThrow(() -> new IllegalArgumentException("해당 구인글이 존재하지 않습니다."));
-        if (!member.getUserId().equals(post.getUserId().getUserId())) {
+        if (!member.getUserId().equals(post.getMember().getUserId())) {
             throw new AccessDeniedException("접근 권한이 없습니다.");
         }
         Apply apply = applyRepository.findById(applyId).orElseThrow(() -> new IllegalArgumentException("해당 지원서가 존재하지 않습니다."));

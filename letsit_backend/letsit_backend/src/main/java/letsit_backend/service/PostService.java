@@ -40,8 +40,9 @@ public class PostService {
         Area subRegion = areaRepository.findById(requestDto.getSubRegionId())
                 .orElseThrow(() -> new IllegalArgumentException("Invalid sub-region ID"));
 
+        // TODO 소프트스킬 값 설정 추가
         Post post = Post.builder()
-                .userId(user)
+                .member(user)
                 .title(requestDto.getTitle())
                 .content(requestDto.getContent())
                 .totalPersonnel(requestDto.getTotalPersonnel())
@@ -51,7 +52,7 @@ public class PostService {
                 .onOff(requestDto.getOnOff())
                 .region(region)
                 .subRegion(subRegion)
-                .categoryId(String.join(",", requestDto.getCategoryId()))
+                .category(String.join(",", requestDto.getCategoryId()))
                 .viewCount(0)
                 .scrapCount(0)
                 .createdAt(new Timestamp(System.currentTimeMillis()))
@@ -77,7 +78,7 @@ public class PostService {
                 savedPost.getDifficulty(),
                 savedPost.getOnOff(),
                 savedPost.getDeadline(),
-                savedPost.getCategoryId(),
+                savedPost.getCategory(),
                 savedPost.getAgeGroup(),
                 savedPost.getRegion().getName(),
                 savedPost.getSubRegion().getName(),
@@ -114,7 +115,7 @@ public class PostService {
         post.setStack(postRequestDto.getStack());
         post.setDifficulty(postRequestDto.getDifficulty());
         post.setOnOff(postRequestDto.getOnOff());
-        post.setCategoryId(postRequestDto.getCategoryId());
+        post.setCategory(postRequestDto.getCategoryId());
         post.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
 
         Post updatedPost = postRepository.save(post);
@@ -132,7 +133,7 @@ public class PostService {
                 updatedPost.getDifficulty(),
                 updatedPost.getOnOff(),
                 updatedPost.getDeadline(),
-                updatedPost.getCategoryId(),
+                updatedPost.getCategory(),
                 updatedPost.getAgeGroup(),
                 updatedPost.getRegion().getName(),
                 updatedPost.getSubRegion().getName(),
@@ -150,7 +151,7 @@ public class PostService {
         Optional<Post> optionalPost = postRepository.findById(postId);
         if (optionalPost.isPresent()) {
             Post post = optionalPost.get();
-            if (post.getUserId().getUserId().equals(user.getUserId())) {
+            if (post.getMember().getUserId().equals(user.getUserId())) {
                 postRepository.deleteById(postId);
                 return true;
             }
@@ -181,7 +182,7 @@ public class PostService {
 
             // TODO mapTo~~
             return new PostResponseDto(
-                    post.getUserId().getUserId(),
+                    post.getMember().getUserId(),
                     post.getPostId(),
                     post.getTitle(),
                     post.getContent(),
@@ -192,7 +193,7 @@ public class PostService {
                     post.getDifficulty(),
                     post.getOnOff(),
                     post.getDeadline(),
-                    post.getCategoryId(),
+                    post.getCategory(),
                     post.getAgeGroup(),
                     post.getRegion().getName(),
                     post.getSubRegion().getName(),
@@ -242,7 +243,7 @@ public class PostService {
                 .collect(Collectors.toList());
 
         return new PostResponseDto(
-                post.getUserId().getUserId(),
+                post.getMember().getUserId(),
                 post.getPostId(),
                 post.getTitle(),
                 post.getContent(),
@@ -253,7 +254,7 @@ public class PostService {
                 post.getDifficulty(),
                 post.getOnOff(),
                 post.getDeadline(),
-                post.getCategoryId(),
+                post.getCategory(),
                 post.getAgeGroup(),
                 post.getRegion().getName(),
                 post.getSubRegion().getName(),
