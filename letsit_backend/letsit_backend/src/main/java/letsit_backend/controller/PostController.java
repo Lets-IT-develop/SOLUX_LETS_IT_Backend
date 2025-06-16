@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-// TODO fail 대신 커스텀 에러 날리기
 @RestController
 @RequestMapping("/posts")
 @RequiredArgsConstructor
@@ -35,7 +34,6 @@ public class PostController {
     }
 
     // 게시글 수정
-    // TODO @Valid 누락 수정
     @PutMapping("/{postId}/update")
     public Response<PostResponseDto> updatePost(@PathVariable Long postId, @Valid @RequestBody PostRequestDto postRequestDto) {
         // TODO try-catch 제거 -> service 로직에 위임
