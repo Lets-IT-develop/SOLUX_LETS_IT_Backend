@@ -24,7 +24,7 @@ public class PostRequestDto {
     private Post.OnOff onOff;
     private Long regionId;
     private Long subRegionId;
-    private List<String> categoryId;
+    private List<String> categories;
     private Post.ProjectPeriod projectPeriod;
     private Post.AgeGroup ageGroup;
 }

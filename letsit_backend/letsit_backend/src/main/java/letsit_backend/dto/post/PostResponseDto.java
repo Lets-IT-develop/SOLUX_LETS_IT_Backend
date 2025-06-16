@@ -26,7 +26,7 @@ public class PostResponseDto {
     private Post.Difficulty difficulty;
     private Post.OnOff onOff;
     private Boolean deadline;
-    private List<String> categoryId;
+    private List<String> categories;
     private Post.AgeGroup ageGroup;
     private String region;
     private String subRegion;
@@ -49,7 +49,7 @@ public class PostResponseDto {
                            Post.Difficulty difficulty,
                            Post.OnOff onOff,
                            Boolean deadline,
-                           List<String> categoryId,
+                           List<String> categories,
                            Post.AgeGroup ageGroup,
                            String region,
                            String subRegion,
@@ -71,7 +71,7 @@ public class PostResponseDto {
         this.difficulty = difficulty;
         this.onOff = onOff;
         this.deadline = deadline;
-        this.categoryId = categoryId;
+        this.categories = categories;
         this.ageGroup = ageGroup;
         this.region = region;
         this.subRegion = subRegion;
