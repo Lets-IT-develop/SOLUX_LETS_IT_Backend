@@ -18,8 +18,8 @@ public class PostRequestDto {
     private Post.TotalPersonnel totalPersonnel;
     private LocalDate recruitDueDate;
     private String preference;
-//    private ProjectInfo projectInfo;
     private List<String> stack;
+    private List<String> softSkills;
     private Post.Difficulty difficulty;
     private Post.OnOff onOff;
     private Long regionId;
@@ -27,22 +27,4 @@ public class PostRequestDto {
     private List<String> categoryId;
     private Post.ProjectPeriod projectPeriod;
     private Post.AgeGroup ageGroup;
-
-//    @Getter
-//    @Setter
-//    @NoArgsConstructor
-//    public static class RecruitDueDate {
-//        private Timestamp startDate;
-//        private Timestamp endDate;
-//    }
-
-//    @Getter
-//    @Setter
-//    @NoArgsConstructor
-//    public static class ProjectInfo {
-//        private Post.ProjectPeriod projectPeriod;
-//        private Post.AgeGroup ageGroup;
-//    }
-
-
 }
