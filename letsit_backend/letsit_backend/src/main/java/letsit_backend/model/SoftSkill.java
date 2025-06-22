@@ -46,4 +46,10 @@ public class SoftSkill {
             return KoreanEnum.fromKorean(SoftSkill.SoftSkillSection.class, korean);
         }
     }
+
+    // init용 Constructor
+    public SoftSkill(String softSkillName, SoftSkillSection section) {
+        this.softSkillName = softSkillName;
+        this.section = section;
+    }
 }
