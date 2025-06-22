@@ -1,9 +1,7 @@
 package letsit_backend.model;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.List;
 
@@ -13,7 +11,7 @@ import java.util.List;
 @Entity
 public class Area {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    //@GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String name;
@@ -24,6 +22,14 @@ public class Area {
 
     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Area> subAreas;
+
+    // init용 Constructor
+    public Area(Long id, String name, Area parent) {
+        this.id = id;
+        this.name = name;
+        this.parent = parent;
+    }
+
 
 //    public Area(String name, Area parent) {
 //        this.name = name;
