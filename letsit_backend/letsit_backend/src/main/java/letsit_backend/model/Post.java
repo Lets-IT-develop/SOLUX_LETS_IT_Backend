@@ -68,6 +68,7 @@ public class Post {
     @OneToMany(mappedBy = "post",
             cascade = CascadeType.ALL,
             orphanRemoval = true)
+    @Builder.Default // null 대신 빈 리스트로 초기화
     private List<PostCategory> postCategories = new ArrayList<>();
 
     private int viewCount;
@@ -86,6 +87,7 @@ public class Post {
     @OneToMany(mappedBy = "post",
             cascade = CascadeType.ALL,
             orphanRemoval = true)
+    @Builder.Default // null 대신 빈 리스트로 초기화
     private List<PostSkillStack> postSkillStacks = new ArrayList<>();
 
     private String preference;
@@ -93,6 +95,7 @@ public class Post {
     @OneToMany(mappedBy = "post",
             cascade = CascadeType.ALL,
             orphanRemoval = true)
+    @Builder.Default // null 대신 빈 리스트로 초기화
     private List<PostSoftSkill> postSoftSkills = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
