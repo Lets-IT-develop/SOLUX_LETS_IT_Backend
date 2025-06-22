@@ -23,4 +23,9 @@ public class SkillStack {
             cascade = CascadeType.ALL,
             orphanRemoval = true)
     private List<PostSkillStack> postStacks = new ArrayList<>();
+
+    // init용 Constructor
+    public SkillStack(String stackName) {
+        this.stackName = stackName;
+    }
 }
