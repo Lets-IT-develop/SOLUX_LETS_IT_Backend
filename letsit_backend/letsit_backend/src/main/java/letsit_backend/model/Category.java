@@ -24,4 +24,9 @@ public class Category {
             cascade = CascadeType.ALL,
             orphanRemoval = true)
     private List<PostCategory> postCategories = new ArrayList<>();
+
+    // init용 Constructor
+    public Category(String categoryName) {
+        this.categoryName = categoryName;
+    }
 }
