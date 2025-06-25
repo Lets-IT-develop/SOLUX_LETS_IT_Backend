@@ -46,8 +46,8 @@ class PostServiceTest {
 
     @AfterEach
     public void after() {
-        memberRepository.deleteAll();
         postRepository.deleteAll();
+        memberRepository.deleteAll();
         System.out.println("Test After");
     }
 
@@ -67,6 +67,21 @@ class PostServiceTest {
         assertThat(response.getRecruitDueDate()).isEqualTo(requestDto.getRecruitDueDate());
         assertThat(response.getSoftSkills()).contains("통솔력이 있어요");
         assertThat(response.getStack()).contains("java");
+    }
+
+    @Test
+    public void getOnePost() throws Exception {
+        // given
+        Member member = createMember(1L, "테스트 유저");
+        PostRequestDto requestDto = buildPostRequest(member.getUserId());
+        PostResponseDto createdPost = postService.createPost(requestDto);
+
+        // when
+        PostResponseDto foundPost = postService.getPostById(createdPost.getPostId());
+
+        // then
+        assertThat(foundPost.getTitle()).isEqualTo(requestDto.getTitle());
+        assertThat(foundPost.getContent()).isEqualTo(requestDto.getContent());
     }
 
     private Member createMember(Long kakaoId, String name) {
@@ -97,7 +112,7 @@ class PostServiceTest {
         post.setSubRegionId(1L);
         post.setPreference("인근 거주자 우대");
         post.setAgeGroup(Post.AgeGroup.S20A);
-        post.setStack(List.of("java"));
+        post.setStack(List.of("java", "pyhton"));
         post.setSoftSkills(List.of("통솔력이 있어요"));
         post.setCategories(List.of("데브옵스"));
         return post;
