@@ -84,6 +84,23 @@ class PostServiceTest {
         assertThat(foundPost.getContent()).isEqualTo(requestDto.getContent());
     }
 
+    @Test
+    public void updatePost() throws Exception {
+        // given
+        Member member = createMember(1L, "테스트 유저");
+        PostRequestDto requestDto = buildPostRequest(member.getUserId());
+        PostResponseDto createdPost = postService.createPost(requestDto);
+
+        // when
+        requestDto.setTitle("수정된 제목");
+        requestDto.setContent("수정된 내용");
+        PostResponseDto updatedPost = postService.updatePost(createdPost.getPostId(), requestDto);
+
+        // then
+        assertThat(updatedPost.getTitle()).isEqualTo("수정된 제목");
+        assertThat(updatedPost.getContent()).isEqualTo("수정된 내용");
+    }
+
     private Member createMember(Long kakaoId, String name) {
         Member member = Member.builder()
                 .name(name)
