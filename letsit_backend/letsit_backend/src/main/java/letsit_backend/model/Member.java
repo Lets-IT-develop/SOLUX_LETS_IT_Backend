@@ -1,14 +1,7 @@
 package letsit_backend.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
-
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-
-import java.util.Collection;
-import java.util.List;
 
 
 @Builder
@@ -22,7 +15,10 @@ public class Member {
     private Long userId;
 
     @Column
-    private Long kakaoId;
+    private String username;
+
+    @Column
+    private String email;
 
     @Column
     private String name;
@@ -38,19 +34,4 @@ public class Member {
 
     @Enumerated(EnumType.STRING)
     private Role role;
-
-    @Setter
-    private String kakaoAccessToken;
-
-
-    @Builder
-    public Member(String name, String ProfileImageUrl, Role role, Long kakaoId, String gender, String age_range, String kakaoAccessToken) {
-        this.name = name;
-        this.role = role;
-        this.profileImageUrl = ProfileImageUrl;
-        this.ageRange = age_range;
-        this.kakaoId = kakaoId;
-        this.gender = gender;
-        this.kakaoAccessToken = kakaoAccessToken;
-    }
 }

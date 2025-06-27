@@ -2,10 +2,15 @@ package letsit_backend.jwt;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.SignatureException;
+import jakarta.servlet.http.Cookie;
+import letsit_backend.dto.auth.CustomOAuth2User;
+import letsit_backend.dto.auth.MemberDto;
 import letsit_backend.model.Member;
+import letsit_backend.model.Role;
 import letsit_backend.repository.MemberRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -23,52 +28,68 @@ import java.util.Optional;
 
 @Component
 public class JwtFilter extends OncePerRequestFilter {
+    private final JWTUtil jwtUtil;
 
-    @Autowired
-    private JwtProvider jwtProvider;
-
-    @Autowired
-    private MemberRepository memberRepository;
+    public JwtFilter(JWTUtil jwtUtil) {
+        this.jwtUtil = jwtUtil;
+    }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
-            throws ServletException, IOException {
-        String header = request.getHeader("Authorization");
-        String token = null;
-        String kakaoId = null;
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
-        if (header != null && header.startsWith("Bearer ")) {
-            token = header.substring(7);
-            logger.info(token);
-            try {
-                kakaoId = jwtProvider.getSubject(token);
-            } catch (IllegalArgumentException e) {
-                logger.error("An error occurred while fetching the username from the token", e);
-            } catch (ExpiredJwtException e) {
-                logger.warn("The token is expired and not valid anymore", e);
-            } catch (SignatureException e) {
-                logger.error("Authentication Failed. Username or Password not valid.");
+        //cookie들을 불러온 뒤 Authorization Key에 담긴 쿠키를 찾음
+        String authorization = null;
+        Cookie[] cookies = request.getCookies();
+        for (Cookie cookie : cookies) {
+
+            System.out.println(cookie.getName());
+            if (cookie.getName().equals("Authorization")) {
+
+                authorization = cookie.getValue();
             }
-        } else {
-            logger.warn("Couldn't find bearer string, header will be ignored");
         }
 
-        if (kakaoId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            Optional<Member> memberOptional = memberRepository.findByKakaoId(Long.parseLong(kakaoId));
-            if (memberOptional.isPresent() && jwtProvider.validToken(token)) {
-                Member member = memberOptional.get();
-                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                        member, null, Collections.emptyList());
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                logger.info("Authenticated user " + member.getName() + ", setting security context");
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-            } else {
-                logger.warn("No member found with kakaoId: " + kakaoId);
-            }
-        } else {
-            logger.warn("Invalid JWT token for kakaoId: " + kakaoId);
+        //Authorization 헤더 검증
+        if (authorization == null) {
+
+            System.out.println("token null");
+            filterChain.doFilter(request, response);
+
+            //조건이 해당되면 메소드 종료
+            return;
         }
 
-        chain.doFilter(request, response);
+        //토큰
+        String token = authorization;
+
+        //토큰 소멸 시간 검증
+        if (jwtUtil.isExpired(token)) {
+
+            System.out.println("token expired");
+            filterChain.doFilter(request, response);
+
+            //조건이 해당되면 메소드 종료
+            return;
+        }
+
+        //토큰에서 username과 role 획득
+        String username = jwtUtil.getUsername(token);
+        String role = jwtUtil.getRole(token);
+
+        //userDTO를 생성하여 값 set
+        MemberDto memberDto = MemberDto.builder()
+                .username(username)
+                .role(role)
+                .build();
+
+        //UserDetails에 회원 정보 객체 담기
+        CustomOAuth2User customOAuth2User = new CustomOAuth2User(memberDto);
+
+        //스프링 시큐리티 인증 토큰 생성
+        Authentication authToken = new UsernamePasswordAuthenticationToken(customOAuth2User, null, customOAuth2User.getAuthorities());
+        //세션에 사용자 등록
+        SecurityContextHolder.getContext().setAuthentication(authToken);
+
+        filterChain.doFilter(request, response);
     }
 }
