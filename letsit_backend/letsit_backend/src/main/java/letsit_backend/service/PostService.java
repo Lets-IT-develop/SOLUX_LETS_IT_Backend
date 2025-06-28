@@ -155,8 +155,16 @@ public class PostService {
 
     // 마감기한 지남 -> 마감처리
     @Transactional
-    public void closePost(Long postId) {
+    public void closePost(Member user, Long postId) {
         Post post = findPostById(postId);
+
+        if (!post.getMember().getUserId().equals(user.getUserId())) {
+            throw new IllegalArgumentException("작성자만 마감처리할 수 있습니다.");
+        }
+
+        if (post.isClosed()) {
+            throw new IllegalArgumentException("이미 마감된 게시글입니다.");
+        }
 
         post.setClosed();
         postRepository.save(post);

@@ -74,9 +74,9 @@ public class PostController {
     // 모집 마감 처리
     @PostMapping("/{postId}/close")
     @ResponseStatus(HttpStatus.OK)
-    public Response<?> closePost(@PathVariable("postId") Long postId) {
+    public Response<?> closePost(@CurrentUser Member member, @PathVariable("postId") Long postId) {
         try {
-            postService.closePost(postId);
+            postService.closePost(member, postId);
             return Response.success("모집이 마감되었습니다.", null);
         } catch (IllegalArgumentException e) {
             return Response.fail("모집 마감에 실패했습니다.");
