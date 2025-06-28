@@ -27,8 +27,6 @@ public class PostService {
     private final SoftSkillRepository softSkillRepository;
     private final CategoryRepository categoryRepository;
 
-    // TODO findBy~~ 로직 중복 -> 공통으로 뽑아낼 것 -> 완료
-
     // 게시글 생성
     public PostResponseDto createPost(PostRequestDto requestDto) {
 
@@ -153,7 +151,7 @@ public class PostService {
         return PostResponseDto.from(post, comments);
     }
 
-    // 마감기한 지남 -> 마감처리
+    // 작성자에 의한 게시글 마감처리
     @Transactional
     public void closePost(Member user, Long postId) {
         Post post = findPostById(postId);
