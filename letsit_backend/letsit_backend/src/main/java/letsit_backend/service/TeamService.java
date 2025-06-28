@@ -27,7 +27,7 @@ public class TeamService {
     private final ApplyRepository applyRepository;
 
     // 팀 게시판 생성
-    @Transactional
+    // TODO post 생성 함수에 추가
     public void createTeamPost(Long postId, Member member, TeamCreateRequestDto request) {
         Post post = getPost(postId);
         validatePostOwnership(member, post);
@@ -46,26 +46,23 @@ public class TeamService {
                 .teamMemberRole(TeamMember.Role.Team_Leader)
                 .build();
         teamMemberRepository.save(teamMember);
-
-        // 팀 멤버 생성
-        List<Apply> applyList = applyRepository.findAllByPostIdAndConfirm(post, true);
-        if (applyList.isEmpty()) {
-            return; // FIXME 0명이어도 생성가능하도록? 아니면 예외?
-        }
-
-        applyList.forEach(apply -> {
-            createTeamMember(teamPost, apply.getUserId());
-        });
     }
 
-    // 팀 멤버 생성 -> 지원서 승인
-    private void createTeamMember(TeamPost teamPost, Member member) {
+    // 팀 멤버 생성
+    @Transactional
+    public void createTeamMember(Long teamId, Long targetMemberId, Member member) {
+        TeamPost teamPost = getTeamPost(teamId);
+        TeamMember currentLeader = getTeamMemberByMemberAndTeamPost(member,teamPost);
+        validateIsLeader(currentLeader);
+
+        Member targetMember = getMember(targetMemberId);
 
         TeamMember teamMember = TeamMember.builder()
                 .teamId(teamPost)
-                .userId(member)
+                .userId(targetMember)
                 .teamMemberRole(TeamMember.Role.Team_Member)
                 .build();
+
         teamMemberRepository.save(teamMember);
     }
 
@@ -133,7 +130,7 @@ public class TeamService {
         }
     }
 
-    // 팀원 강퇴(팀장 only) (완료)
+    // 팀원 강퇴(팀장 only)
     @Transactional
     public void deleteTeamMember(Long teamId, Long teamMemberId, Member member) {
         TeamPost teamPost = getTeamPost(teamId);

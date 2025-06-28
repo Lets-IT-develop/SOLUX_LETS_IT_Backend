@@ -16,7 +16,7 @@ public class TeamPost {
     private Long teamId;
 
     @OneToOne
-    @JoinColumn(name = "POST_ID")
+    @JoinColumn(name = "POST_ID", nullable = true)
     private Post post;
 
     @Column(nullable = false)
