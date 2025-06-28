@@ -41,6 +41,8 @@ class PostServiceTest {
 
     @BeforeEach
     public void before() {
+        postRepository.deleteAll();
+        memberRepository.deleteAll();
         System.out.println("Test Before");
     }
 
@@ -51,6 +53,7 @@ class PostServiceTest {
         System.out.println("Test After");
     }
 
+    // 게시글 업로드
     @Test
     public void upload() throws Exception {
         // given
@@ -69,6 +72,7 @@ class PostServiceTest {
         assertThat(response.getStack()).contains("java");
     }
 
+    // 게시글 단건 조회
     @Test
     public void getOnePost() throws Exception {
         // given
@@ -84,6 +88,24 @@ class PostServiceTest {
         assertThat(foundPost.getContent()).isEqualTo(requestDto.getContent());
     }
 
+    // 게시글 조회수 증가
+    @Test
+    public void getPost_shouldIncreaseViewCount() {
+        // given
+        Member member = createMember(1L, "테스트 유저");
+        PostRequestDto requestDto = buildPostRequest(member.getUserId());
+        PostResponseDto createdPost = postService.createPost(requestDto);
+
+        // when
+        postService.getPostById(createdPost.getPostId());
+        Post post = postRepository.findById(createdPost.getPostId()).orElseThrow();
+
+        // then
+        assertThat(post.getViewCount()).isEqualTo(1);
+    }
+
+
+    // 게시글 수정
     @Test
     public void updatePost() throws Exception {
         // given
@@ -99,6 +121,96 @@ class PostServiceTest {
         // then
         assertThat(updatedPost.getTitle()).isEqualTo("수정된 제목");
         assertThat(updatedPost.getContent()).isEqualTo("수정된 내용");
+    }
+
+    // 게시글 삭제
+    @Test
+    public void deletePost() throws Exception {
+        // given
+        Member member = createMember(1L, "테스트 유저");
+        PostRequestDto requestDto = buildPostRequest(member.getUserId());
+        PostResponseDto createdPost = postService.createPost(requestDto);
+
+        // when
+        postService.deletePost(member, createdPost.getPostId());
+
+        // then
+        assertThat(postRepository.findById(createdPost.getPostId())).isEmpty();
+    }
+
+    // 게시글 모집 마감
+    @Test
+    public void closePost() throws Exception {
+        // given
+        Member member = createMember(1L, "테스트 유저");
+        PostRequestDto requestDto = buildPostRequest(member.getUserId());
+        PostResponseDto createdPost = postService.createPost(requestDto);
+
+        // when
+        postService.closePost(member, createdPost.getPostId());
+        //postService.closePost(member, createdPost.getPostId());
+
+        // then
+        Post post = postRepository.findById(createdPost.getPostId()).orElseThrow();
+        assertThat(post.getDeadline()).isTrue(); // 마감 여부 확인
+    }
+
+    // 게시글 모집 마감 실패 (작성자만 마감 가능)
+    @Test
+    public void closePostFail() throws Exception {
+        // given
+        Member member1 = createMember(1L, "테스트 유저 1");
+        Member member2 = createMember(2L, "테스트 유저 2");
+        PostRequestDto requestDto = buildPostRequest(member1.getUserId());
+        PostResponseDto createdPost = postService.createPost(requestDto);
+
+        // when & then
+        try {
+            postService.closePost(member2, createdPost.getPostId());
+        } catch (IllegalArgumentException e) {
+            assertThat(e.getMessage()).isEqualTo("작성자만 마감처리할 수 있습니다.");
+        }
+    }
+
+    // 게시글 모집 마감 실패 (이미 마감된 게시글)
+    @Test
+    public void closePostAlreadyClosed() throws Exception {
+        // given
+        Member member = createMember(1L, "테스트 유저");
+        PostRequestDto requestDto = buildPostRequest(member.getUserId());
+        PostResponseDto createdPost = postService.createPost(requestDto);
+
+        // 이미 마감 처리
+        postService.closePost(member, createdPost.getPostId());
+
+        // when & then
+        try {
+            postService.closePost(member, createdPost.getPostId());
+        } catch (IllegalArgumentException e) {
+            assertThat(e.getMessage()).isEqualTo("이미 마감된 게시글입니다.");
+        }
+    }
+
+    // 게시글 리스트 조회 (마감되지 않은 게시글만)
+    @Test
+    public void getRecruitingPosts() throws Exception {
+        // given
+        Member member1 = createMember(1L, "테스트 유저 1");
+        Member member2 = createMember(2L, "테스트 유저 2");
+
+        PostRequestDto requestDto1 = buildPostRequest(member1.getUserId());
+        PostRequestDto requestDto2 = buildPostRequest(member2.getUserId());
+
+        postService.createPost(requestDto1);
+        postService.createPost(requestDto2);
+
+        // when
+        List<PostResponseDto> posts = postService.getRecruitingPostsByCreatedAt();
+
+        // then
+        assertThat(posts).extracting("title")
+                .containsExactly(requestDto1.getTitle(), requestDto2.getTitle());
+
     }
 
     private Member createMember(Long kakaoId, String name) {
