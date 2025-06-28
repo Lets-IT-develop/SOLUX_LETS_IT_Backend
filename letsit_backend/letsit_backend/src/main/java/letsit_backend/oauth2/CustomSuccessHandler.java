@@ -41,6 +41,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         String token = jwtUtil.createJwt(username, role, 3600*3600L);
 
         //쿠키로 토큰 전달 후 리다이렉트
+        //회원가입 여부에 따라 리디렉션 시킬 주소 수정
         response.addCookie(createCookie("Authorization", token));
         response.sendRedirect("http://localhost:3000/");
     }
