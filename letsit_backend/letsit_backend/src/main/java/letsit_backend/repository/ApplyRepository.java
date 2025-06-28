@@ -11,5 +11,6 @@ public interface ApplyRepository extends JpaRepository<Apply, Long> {
     List<Apply> findByPostId(Post post);
     List<Apply> findByUserId(Member member);
     List<Apply> findAllByPostId(Post post);
+    List<Apply> findAllByPostIdAndConfirm(Post post, Boolean confirm);
 
 }
