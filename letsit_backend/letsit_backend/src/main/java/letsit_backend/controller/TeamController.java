@@ -14,7 +14,7 @@ public class TeamController {
 
     private final TeamService teamService;
 
-    // 팀 생성 (게시물 작성자 only)
+    // 팀 생성 and 팀멤버 생성 (게시물 작성자 only)
     @PostMapping("/posts/{postId}/teams")
     public Response<?> creatTeam(@PathVariable("postId") Long postId,
                                  @RequestBody TeamCreateRequestDto teamCreateRequestDto,
@@ -24,14 +24,7 @@ public class TeamController {
         return Response.success("팀 생성", null);
     }
 
-    // 팀멤버 생성 (팀장 only)
-    @PostMapping("/teams/{teamId}/members/{memberId}")
-    public Response<?> createTeamMember(@PathVariable("teamId") Long teamId,
-                                        @PathVariable("memberId") Long memberId,
-                                        @CurrentUser Member member) {
-        teamService.createTeamMember(teamId, memberId, member);
-        return Response.success("팀원 등록", null);
-    }
+
 
 
     // 팀 정보 조회

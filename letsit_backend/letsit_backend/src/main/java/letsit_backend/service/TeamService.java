@@ -24,13 +24,8 @@ public class TeamService {
     private final TeamPostRepository teamPostRepository;
     private final MemberRepository memberRepository;
     private final ProfileRepository profileRepository;
+    private final ApplyRepository applyRepository;
 
-    /**
-     * 현재 ui에서는 팀생성 로직이 따로 없음. 그냥 게시글 올리고 그 게시글에서 신청내역에서 바로 팀원받기 가능
-     * 그럼 이 teamMember생성을 0이다가 1이 될때 teamPost를 생성하게 해야하는지,
-     * teamPost를 생성하는 로직이 ui에 추가되고 teamPost생성 시점에 일괄로 teamMember를 생성할지
-     * 전자의 경우엔 teamPost를 만들때 프로젝트title을 어디서 가져올지 and 변경기능이 있는지
-     */
     // 팀 게시판 생성
     @Transactional
     public void createTeamPost(Long postId, Member member, TeamCreateRequestDto request) {
@@ -52,22 +47,23 @@ public class TeamService {
                 .build();
         teamMemberRepository.save(teamMember);
 
-        // FIXME teamMember 객체 생성? or 승인할때마다 TeamMember생성 api 별도로 호출?
+        // 팀 멤버 생성
+        List<Apply> applyList = applyRepository.findAllByPostIdAndConfirm(post, true);
+        if (applyList.isEmpty()) {
+            return; // FIXME 0명이어도 생성가능하도록? 아니면 예외?
+        }
+
+        applyList.forEach(apply -> {
+            createTeamMember(teamPost, apply.getUserId());
+        });
     }
 
     // 팀 멤버 생성 -> 지원서 승인
-    @Transactional
-    public void createTeamMember(Long teamId, Long memberId, Member member) {
-        TeamPost teamPost = getTeamPost(teamId);
-        TeamMember currentLeader = getTeamMemberByMemberAndTeamPost(member, teamPost);
-        validateIsLeader(currentLeader);
-
-        // 등록할 member조회
-        Member targetMember = getMember(memberId);
+    private void createTeamMember(TeamPost teamPost, Member member) {
 
         TeamMember teamMember = TeamMember.builder()
                 .teamId(teamPost)
-                .userId(targetMember)
+                .userId(member)
                 .teamMemberRole(TeamMember.Role.Team_Member)
                 .build();
         teamMemberRepository.save(teamMember);
