@@ -49,6 +49,7 @@ public class TeamService {
     }
 
     // 팀 멤버 생성
+    // TODO apply 승인 함수에 추가
     @Transactional
     public void createTeamMember(Long teamId, Long targetMemberId, Member member) {
         TeamPost teamPost = getTeamPost(teamId);
@@ -67,7 +68,6 @@ public class TeamService {
     }
 
     // 팀정보 조회
-    // TODO apply로 이동?
     @Transactional(readOnly = true)
     public TeamInfoResponseDto getTeamInfo(Long teamId, Member member) {
         TeamPost teamPost = getTeamPost(teamId);
