@@ -6,6 +6,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import letsit_backend.dto.auth.CustomOAuth2User;
 import letsit_backend.jwt.JWTUtil;
+import letsit_backend.model.Member;
+import letsit_backend.repository.MemberRepository;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
@@ -19,9 +21,11 @@ import java.util.Iterator;
 public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     private final JWTUtil jwtUtil;
+    private final MemberRepository memberRepository;
 
-    public CustomSuccessHandler(JWTUtil jwtUtil) {
+    public CustomSuccessHandler(JWTUtil jwtUtil, MemberRepository memberRepository) {
         this.jwtUtil = jwtUtil;
+        this.memberRepository = memberRepository;
     }
 
     @Override
@@ -41,9 +45,17 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         String token = jwtUtil.createJwt(username, role, 3600*3600L);
 
         //쿠키로 토큰 전달 후 리다이렉트
-        //회원가입 여부에 따라 리디렉션 시킬 주소 수정
         response.addCookie(createCookie("Authorization", token));
-        response.sendRedirect("http://localhost:3000/");
+        boolean existMember = memberRepository.existsByUsername(username);
+
+        String redirectUrl;
+
+        if (existMember) {
+            redirectUrl = "http://localhost:3000/sign-up"; // 새 유저는 프로필 작성 페이지로
+        } else {
+            redirectUrl = "http://localhost:3000/projects"; // 기존 유저는 홈으로
+        }
+        response.sendRedirect(redirectUrl);
     }
 
     private Cookie createCookie(String key, String value) {
@@ -54,4 +66,5 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         return cookie;
     }
+
 }
