@@ -124,7 +124,7 @@ public class TeamService {
 
         if (allTeamMembers.size() <=1) {
             // 팀장 혼자만 남은 경우 - 팀해체
-            disbandTeam(currentLeader); // FIXME 삭제처리? or 비활성화?
+            disbandTeam(currentLeader);
         } else {
             transferleader(currentLeader, allTeamMembers);
         }
