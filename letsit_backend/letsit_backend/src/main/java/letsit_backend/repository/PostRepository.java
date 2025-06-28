@@ -25,4 +25,6 @@ public interface PostRepository extends JpaRepository<Post, Long>, JpaSpecificat
     List<Post> findByMemberAndDeadlineFalse(Member userId);
 
     List<Post> findAllByDeadlineFalseOrderByCreatedAtDesc();
+
+    List<Post> findAllByDeadlineFalse();
 }
