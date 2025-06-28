@@ -67,6 +67,7 @@ public class TeamService {
     }
 
     // 팀정보 조회
+    // TODO apply로 이동?
     @Transactional(readOnly = true)
     public TeamInfoResponseDto getTeamInfo(Long teamId, Member member) {
         TeamPost teamPost = getTeamPost(teamId);
