@@ -3,6 +3,8 @@ package letsit_backend.service;
 import letsit_backend.dto.comment.CommentResponseDto;
 import letsit_backend.dto.post.PostRequestDto;
 import letsit_backend.dto.post.PostResponseDto;
+import letsit_backend.exception.CustomException;
+import letsit_backend.exception.ErrorCode;
 import letsit_backend.model.*;
 import letsit_backend.repository.*;
 import lombok.RequiredArgsConstructor;
@@ -70,13 +72,13 @@ public class PostService {
 
         // 찾아온 값과 request 값 개수가 동일한지 확인(누락된 값 없는지 확인)
         if (skillStacks.size() != requestDto.getStack().size()) {
-            throw new IllegalArgumentException(INVALID_STACK);
+            throw new CustomException(ErrorCode.INVALID_STACK);
         }
         if (softSkills.size() != requestDto.getSoftSkills().size()) {
-            throw new IllegalArgumentException(INVALID_SOFT_SKILL);
+            throw new CustomException(ErrorCode.INVALID_SOFT_SKILL);
         }
         if (categories.size() != requestDto.getCategories().size()) {
-            throw new IllegalArgumentException(INVALID_CATEGORY);
+            throw new CustomException(ErrorCode.INVALID_CATEGORY);
         }
 
         // 값 동기화(추가)
@@ -97,10 +99,10 @@ public class PostService {
         Area subRegion = findAreaById(requestDto.getSubRegionId());
 
         if (post.isClosed()) {
-            throw new IllegalStateException("마감된 게시글은 수정할 수 없습니다.");
+            throw new CustomException(ErrorCode.POST_CLOSED);
         }
         if (!post.getMember().getUserId().equals(member.getUserId())) {
-            throw new IllegalArgumentException("작성자만 수정할 수 있습니다.");
+            throw new CustomException(ErrorCode.UNAUTHORIZED);
         }
 
         post.setTitle(requestDto.getTitle());
@@ -123,13 +125,13 @@ public class PostService {
 
         // 찾아온 값과 request 값 개수가 동일한지 확인(누락된 값 없는지 확인)
         if (skillStacks.size() != requestDto.getStack().size()) {
-            throw new IllegalArgumentException(INVALID_STACK);
+            throw new CustomException(ErrorCode.INVALID_STACK);
         }
         if (softSkills.size() != requestDto.getSoftSkills().size()) {
-            throw new IllegalArgumentException(INVALID_SOFT_SKILL);
+            throw new CustomException(ErrorCode.INVALID_SOFT_SKILL);
         }
         if (categories.size() != requestDto.getCategories().size()) {
-            throw new IllegalArgumentException(INVALID_CATEGORY);
+            throw new CustomException(ErrorCode.INVALID_CATEGORY);
         }
 
         // 값 동기화(수정)
@@ -145,7 +147,7 @@ public class PostService {
     public void deletePost(Member member, Long postId) {
         Post post = findPostById(postId);
         if (!post.getMember().getUserId().equals(member.getUserId())) {
-            throw new IllegalArgumentException("작성자만 삭제할 수 있습니다.");
+            throw new CustomException(ErrorCode.UNAUTHORIZED);
         }
         postRepository.delete(post);
     }
@@ -168,11 +170,11 @@ public class PostService {
         Post post = findPostById(postId);
 
         if (!post.getMember().getUserId().equals(member.getUserId())) {
-            throw new IllegalArgumentException("작성자만 마감처리할 수 있습니다.");
+            throw new CustomException(ErrorCode.UNAUTHORIZED);
         }
 
         if (post.isClosed()) {
-            throw new IllegalArgumentException("이미 마감된 게시글입니다.");
+            throw new CustomException(ErrorCode.POST_ALREADY_CLOSED);
         }
 
         post.setClosed();
@@ -190,17 +192,17 @@ public class PostService {
     // findByX
     private Member findMemberById(Long userId) {
         return memberRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("회원 아이디와 일치하는 사용자가 없습니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.UNAUTHORIZED));
     }
 
     private Area findAreaById(Long areaId) {
         return areaRepository.findById(areaId)
-                .orElseThrow(() -> new IllegalArgumentException("지역 아이디와 일치하는 지역이 없습니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.AREA_NOT_FOUND));
     }
 
     private Post findPostById(Long postId) {
         return postRepository.findById(postId)
-                .orElseThrow(() -> new IllegalArgumentException("게시글 아이디와 일치하는 게시글이 없습니다."));
+                .orElseThrow(() -> new CustomException(ErrorCode.POSTS_NOT_FOUND));
     }
 
     // TODO 프로필 조회에서 N+1 문제 발생 -> 추후 개선
