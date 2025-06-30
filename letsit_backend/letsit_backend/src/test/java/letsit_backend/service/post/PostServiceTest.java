@@ -58,10 +58,10 @@ class PostServiceTest {
     public void upload() throws Exception {
         // given
         Member member = createMember(1L, "테스트 유저");
-        PostRequestDto requestDto = buildPostRequest(member.getUserId());
+        PostRequestDto requestDto = buildPostRequest();
 
         // when
-        PostResponseDto response = postService.createPost(requestDto);
+        PostResponseDto response = postService.createPost(member, requestDto);
 
         // then
         assertThat(response.getTitle()).isEqualTo(requestDto.getTitle());
@@ -77,8 +77,8 @@ class PostServiceTest {
     public void getOnePost() throws Exception {
         // given
         Member member = createMember(1L, "테스트 유저");
-        PostRequestDto requestDto = buildPostRequest(member.getUserId());
-        PostResponseDto createdPost = postService.createPost(requestDto);
+        PostRequestDto requestDto = buildPostRequest();
+        PostResponseDto createdPost = postService.createPost(member, requestDto);
 
         // when
         PostResponseDto foundPost = postService.getPostById(createdPost.getPostId());
@@ -93,8 +93,8 @@ class PostServiceTest {
     public void getPost_shouldIncreaseViewCount() {
         // given
         Member member = createMember(1L, "테스트 유저");
-        PostRequestDto requestDto = buildPostRequest(member.getUserId());
-        PostResponseDto createdPost = postService.createPost(requestDto);
+        PostRequestDto requestDto = buildPostRequest();
+        PostResponseDto createdPost = postService.createPost(member, requestDto);
 
         // when
         postService.getPostById(createdPost.getPostId());
@@ -110,13 +110,13 @@ class PostServiceTest {
     public void updatePost() throws Exception {
         // given
         Member member = createMember(1L, "테스트 유저");
-        PostRequestDto requestDto = buildPostRequest(member.getUserId());
-        PostResponseDto createdPost = postService.createPost(requestDto);
+        PostRequestDto requestDto = buildPostRequest();
+        PostResponseDto createdPost = postService.createPost(member, requestDto);
 
         // when
         requestDto.setTitle("수정된 제목");
         requestDto.setContent("수정된 내용");
-        PostResponseDto updatedPost = postService.updatePost(createdPost.getPostId(), requestDto);
+        PostResponseDto updatedPost = postService.updatePost(member, createdPost.getPostId(), requestDto);
 
         // then
         assertThat(updatedPost.getTitle()).isEqualTo("수정된 제목");
@@ -128,8 +128,8 @@ class PostServiceTest {
     public void deletePost() throws Exception {
         // given
         Member member = createMember(1L, "테스트 유저");
-        PostRequestDto requestDto = buildPostRequest(member.getUserId());
-        PostResponseDto createdPost = postService.createPost(requestDto);
+        PostRequestDto requestDto = buildPostRequest();
+        PostResponseDto createdPost = postService.createPost(member, requestDto);
 
         // when
         postService.deletePost(member, createdPost.getPostId());
@@ -143,8 +143,8 @@ class PostServiceTest {
     public void closePost() throws Exception {
         // given
         Member member = createMember(1L, "테스트 유저");
-        PostRequestDto requestDto = buildPostRequest(member.getUserId());
-        PostResponseDto createdPost = postService.createPost(requestDto);
+        PostRequestDto requestDto = buildPostRequest();
+        PostResponseDto createdPost = postService.createPost(member, requestDto);
 
         // when
         postService.closePost(member, createdPost.getPostId());
@@ -161,8 +161,8 @@ class PostServiceTest {
         // given
         Member member1 = createMember(1L, "테스트 유저 1");
         Member member2 = createMember(2L, "테스트 유저 2");
-        PostRequestDto requestDto = buildPostRequest(member1.getUserId());
-        PostResponseDto createdPost = postService.createPost(requestDto);
+        PostRequestDto requestDto = buildPostRequest();
+        PostResponseDto createdPost = postService.createPost(member1, requestDto);
 
         // when & then
         try {
@@ -177,8 +177,8 @@ class PostServiceTest {
     public void closePostAlreadyClosed() throws Exception {
         // given
         Member member = createMember(1L, "테스트 유저");
-        PostRequestDto requestDto = buildPostRequest(member.getUserId());
-        PostResponseDto createdPost = postService.createPost(requestDto);
+        PostRequestDto requestDto = buildPostRequest();
+        PostResponseDto createdPost = postService.createPost(member, requestDto);
 
         // 이미 마감 처리
         postService.closePost(member, createdPost.getPostId());
@@ -198,11 +198,11 @@ class PostServiceTest {
         Member member1 = createMember(1L, "테스트 유저 1");
         Member member2 = createMember(2L, "테스트 유저 2");
 
-        PostRequestDto requestDto1 = buildPostRequest(member1.getUserId());
-        PostRequestDto requestDto2 = buildPostRequest(member2.getUserId());
+        PostRequestDto requestDto1 = buildPostRequest();
+        PostRequestDto requestDto2 = buildPostRequest();
 
-        postService.createPost(requestDto1);
-        postService.createPost(requestDto2);
+        postService.createPost(member1, requestDto1);
+        postService.createPost(member2, requestDto2);
 
         // when
         List<PostResponseDto> posts = postService.getRecruitingPostsByCreatedAt();
@@ -227,9 +227,8 @@ class PostServiceTest {
         return memberRepository.save(member);
     }
 
-    private PostRequestDto buildPostRequest(Long userId) {
+    private PostRequestDto buildPostRequest() {
         PostRequestDto post = new PostRequestDto();
-        post.setUserId(userId);
         post.setTitle("프로젝트 제목");
         post.setContent("프로젝트 내용");
         post.setTotalPersonnel(Post.TotalPersonnel.FIVE);
@@ -241,7 +240,7 @@ class PostServiceTest {
         post.setSubRegionId(1L);
         post.setPreference("인근 거주자 우대");
         post.setAgeGroup(Post.AgeGroup.S20A);
-        post.setStack(List.of("java", "pyhton"));
+        post.setStack(List.of("java", "python"));
         post.setSoftSkills(List.of("통솔력이 있어요"));
         post.setCategories(List.of("데브옵스"));
         return post;
