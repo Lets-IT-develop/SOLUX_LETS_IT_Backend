@@ -27,16 +27,19 @@ public class PostService {
     private final SoftSkillRepository softSkillRepository;
     private final CategoryRepository categoryRepository;
 
-    // 게시글 생성
-    public PostResponseDto createPost(PostRequestDto requestDto) {
+    private static final String INVALID_STACK = "유효하지 않은 스택 이름이 포함되어 있습니다.";
+    private static final String INVALID_SOFT_SKILL = "유효하지 않은 소프트 스킬 이름이 포함되어 있습니다.";
+    private static final String INVALID_CATEGORY = "유효하지 않은 카테고리 이름이 포함되어 있습니다.";
 
-        Member user = findMemberById(requestDto.getUserId());
+
+    // 게시글 생성
+    @Transactional
+    public PostResponseDto createPost(Member member, PostRequestDto requestDto) {
         Area region = findAreaById(requestDto.getRegionId());
         Area subRegion = findAreaById(requestDto.getSubRegionId());
 
-        // TODO 소프트스킬 값 설정 추가
         Post post = Post.builder()
-                .member(user)
+                .member(member)
                 .title(requestDto.getTitle())
                 .content(requestDto.getContent())
                 .totalPersonnel(requestDto.getTotalPersonnel())
@@ -67,13 +70,13 @@ public class PostService {
 
         // 찾아온 값과 request 값 개수가 동일한지 확인(누락된 값 없는지 확인)
         if (skillStacks.size() != requestDto.getStack().size()) {
-            throw new IllegalArgumentException("유효하지 않은 스택 이름이 포함되어 있습니다.");
+            throw new IllegalArgumentException(INVALID_STACK);
         }
         if (softSkills.size() != requestDto.getSoftSkills().size()) {
-            throw new IllegalArgumentException("유효하지 않은 소프트 스킬 이름이 포함되어 있습니다.");
+            throw new IllegalArgumentException(INVALID_SOFT_SKILL);
         }
         if (categories.size() != requestDto.getCategories().size()) {
-            throw new IllegalArgumentException("유효하지 않은 카테고리 이름이 포함되어 있습니다.");
+            throw new IllegalArgumentException(INVALID_CATEGORY);
         }
 
         // 값 동기화(추가)
@@ -87,11 +90,18 @@ public class PostService {
     }
 
     // 게시글 수정
-    public PostResponseDto updatePost(Long postId, PostRequestDto requestDto) {
+    @Transactional
+    public PostResponseDto updatePost(Member member, Long postId, PostRequestDto requestDto) {
         Post post = findPostById(postId);
-        // Member user = findMemberById(requestDto.getUserId()); // 안쓰는데 굳이?
         Area region = findAreaById(requestDto.getRegionId());
         Area subRegion = findAreaById(requestDto.getSubRegionId());
+
+        if (post.isClosed()) {
+            throw new IllegalStateException("마감된 게시글은 수정할 수 없습니다.");
+        }
+        if (!post.getMember().getUserId().equals(member.getUserId())) {
+            throw new IllegalArgumentException("작성자만 수정할 수 있습니다.");
+        }
 
         post.setTitle(requestDto.getTitle());
         post.setContent(requestDto.getContent());
@@ -113,13 +123,13 @@ public class PostService {
 
         // 찾아온 값과 request 값 개수가 동일한지 확인(누락된 값 없는지 확인)
         if (skillStacks.size() != requestDto.getStack().size()) {
-            throw new IllegalArgumentException("유효하지 않은 스택 이름이 포함되어 있습니다.");
+            throw new IllegalArgumentException(INVALID_STACK);
         }
         if (softSkills.size() != requestDto.getSoftSkills().size()) {
-            throw new IllegalArgumentException("유효하지 않은 소프트 스킬 이름이 포함되어 있습니다.");
+            throw new IllegalArgumentException(INVALID_SOFT_SKILL);
         }
         if (categories.size() != requestDto.getCategories().size()) {
-            throw new IllegalArgumentException("유효하지 않은 카테고리 이름이 포함되어 있습니다.");
+            throw new IllegalArgumentException(INVALID_CATEGORY);
         }
 
         // 값 동기화(수정)
@@ -131,16 +141,17 @@ public class PostService {
     }
 
     // 게시글 삭제
-    public void deletePost(Member user, Long postId) {
-        // TODO true/false 반환하지 말고 에러 던져서 처리
+    @Transactional
+    public void deletePost(Member member, Long postId) {
         Post post = findPostById(postId);
-        if (!post.getMember().getUserId().equals(user.getUserId())) {
+        if (!post.getMember().getUserId().equals(member.getUserId())) {
             throw new IllegalArgumentException("작성자만 삭제할 수 있습니다.");
         }
         postRepository.delete(post);
     }
 
     // 게시글 조회
+    @Transactional
     public PostResponseDto getPostById(Long postId) {
         Post post = findPostById(postId);
 
@@ -153,10 +164,10 @@ public class PostService {
 
     // 작성자에 의한 게시글 마감처리
     @Transactional
-    public void closePost(Member user, Long postId) {
+    public void closePost(Member member, Long postId) {
         Post post = findPostById(postId);
 
-        if (!post.getMember().getUserId().equals(user.getUserId())) {
+        if (!post.getMember().getUserId().equals(member.getUserId())) {
             throw new IllegalArgumentException("작성자만 마감처리할 수 있습니다.");
         }
 
@@ -169,7 +180,6 @@ public class PostService {
     }
 
     // 게시글 리스트업 (마감되지 않은 것만)
-    // TODO 읽기 전용 트랜잭션
     // 리스트업에 댓글 필요 없어 보여서 일단은 빈 리스트로 return, 댓글 필요하면 추후 수정
     @Transactional(readOnly = true)
     public List<PostResponseDto> getRecruitingPostsByCreatedAt() {
