@@ -26,7 +26,7 @@ public class InitSkillStackData {
     private void initSkillStacks() {
         if (skillStackRepository.count() == 0) {
             List<SkillStack> skillStacks = List.of(
-                    new SkillStack("pyhton"),
+                    new SkillStack("python"),
                     new SkillStack("java"),
                     new SkillStack("javascript"),
                     new SkillStack("c++"),
