@@ -23,64 +23,41 @@ public class PostController {
     // 게시글 업로드
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/upload")
-    public Response<PostResponseDto> createPost(@Valid @RequestBody PostRequestDto requestDto, @CurrentUser Member member) {
-        // TODO == null 로 체크하기 보다는 스프링 시큐리티의 인증 필터나 @ControllerAdvice 로 일괄 처리
-        if (member == null) {
-            return Response.fail("미인증 회원");
-        }
-        requestDto.setUserId(member.getUserId());
-        PostResponseDto responseDto = postService.createPost(requestDto);
+    public Response<PostResponseDto> createPost(@CurrentUser Member member, @Valid @RequestBody PostRequestDto requestDto) {
+        checkMemberAuthentication(member);
+        PostResponseDto responseDto = postService.createPost(member, requestDto);
         return Response.success("구인 글이 성공적으로 등록되었습니다.", responseDto);
     }
 
     // 게시글 수정
     @PutMapping("/{postId}/update")
-    public Response<PostResponseDto> updatePost(@PathVariable Long postId, @Valid @RequestBody PostRequestDto postRequestDto) {
-        // TODO try-catch 제거 -> service 로직에 위임
-        try {
-            PostResponseDto updatedPost = postService.updatePost(postId, postRequestDto);
-            return Response.success("구인 글이 성공적으로 수정되었습니다.", updatedPost);
-        } catch (IllegalArgumentException e) {
-            return Response.fail("유효성 검사 오류: " + e.getMessage());
-        }
+    public Response<PostResponseDto> updatePost(@CurrentUser Member member, @PathVariable Long postId, @Valid @RequestBody PostRequestDto requestDto) {
+        checkMemberAuthentication(member);
+        PostResponseDto updatedPost = postService.updatePost(member, postId, requestDto);
+        return Response.success("구인 글이 성공적으로 수정되었습니다.", updatedPost);
     }
 
     // 게시글 삭제
     @DeleteMapping("/delete/{postId}")
     public Response<?> deletePost(@CurrentUser Member member, @PathVariable("postId") Long postId) {
-        // TODO == null 로 체크하기 보다는 스프링 시큐리티의 인증 필터나 @ControllerAdvice 로 일괄 처리
-        if (member == null) {
-            return Response.fail("인증이 필요합니다. 로그인 후 다시 시도해 주세요.");
-        }
-        try {
-            postService.deletePost(member, postId);
-            return Response.success("게시글이 성공적으로 삭제되었습니다.", null);
-        } catch (IllegalArgumentException e) {
-            return Response.fail(e.getMessage());
-        }
+        checkMemberAuthentication(member);
+        postService.deletePost(member, postId);
+        return Response.success("게시글이 성공적으로 삭제되었습니다.", null);
     }
 
     // 게시글 조회
     @GetMapping("{postId}")
     public Response<PostResponseDto> getPostById(@PathVariable("postId") Long postId) {
-        try {
-            PostResponseDto postResponseDto = postService.getPostById(postId);
-            return Response.success("조회 성공", postResponseDto);
-        } catch (IllegalArgumentException e) {
-            return Response.fail("Invalid region parameter");
-        }
+        PostResponseDto postResponseDto = postService.getPostById(postId);
+        return Response.success("조회 성공", postResponseDto);
     }
 
     // 모집 마감 처리
     @PostMapping("/{postId}/close")
     @ResponseStatus(HttpStatus.OK)
     public Response<?> closePost(@CurrentUser Member member, @PathVariable("postId") Long postId) {
-        try {
-            postService.closePost(member, postId);
-            return Response.success("모집이 마감되었습니다.", null);
-        } catch (IllegalArgumentException e) {
-            return Response.fail("모집 마감에 실패했습니다.");
-        }
+        postService.closePost(member, postId);
+        return Response.success("모집이 마감되었습니다.", null);
     }
 
     // 최신순으로 모든 게시글 조회
@@ -88,6 +65,13 @@ public class PostController {
     public Response<List<PostResponseDto>> getAllPosts() {
         List<PostResponseDto> posts = postService.getRecruitingPostsByCreatedAt();
         return Response.success("모든 게시글 조회 성공", posts);
+    }
+
+    // Member null 체크 -> null이면 인증 실패 메시지 반환
+    private void checkMemberAuthentication(Member member) {
+        if (member == null) {
+            throw new IllegalArgumentException("인증이 필요합니다. 로그인 후 다시 시도해 주세요.");
+        }
     }
 }
 
