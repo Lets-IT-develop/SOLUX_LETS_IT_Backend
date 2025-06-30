@@ -5,6 +5,8 @@ import letsit_backend.CurrentUser;
 import letsit_backend.dto.post.PostRequestDto;
 import letsit_backend.dto.post.PostResponseDto;
 import letsit_backend.dto.Response;
+import letsit_backend.exception.CustomException;
+import letsit_backend.exception.ErrorCode;
 import letsit_backend.model.Member;
 import letsit_backend.service.PostService;
 import lombok.RequiredArgsConstructor;
@@ -70,7 +72,7 @@ public class PostController {
     // Member null 체크 -> null이면 인증 실패 메시지 반환
     private void checkMemberAuthentication(Member member) {
         if (member == null) {
-            throw new IllegalArgumentException("인증이 필요합니다. 로그인 후 다시 시도해 주세요.");
+            throw new CustomException(ErrorCode.UNAUTHORIZED);
         }
     }
 }
