@@ -1,6 +1,5 @@
 package letsit_backend.dto.profile;
 
-import letsit_backend.model.Profile;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -11,11 +10,9 @@ import java.util.Map;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProfileResponseDto {
+public class ProfileUpdateRequestDto {
     private String nickname;
     private String profileImageUrl;
     private List<String> interests;
-    private List<String> skills;
     private String bio;
-    private Map<String, String> sns;
 }

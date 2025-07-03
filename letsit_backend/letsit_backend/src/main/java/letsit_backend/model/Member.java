@@ -22,35 +22,11 @@ public class Member {
     private Long userId;
 
     @Column
-    private Long kakaoId;
-
-    @Column
     private String name;
 
     @Column
-    private String ageRange;
-
-    @Column
-    private String gender;
-
-    @Column
-    private String profileImageUrl;
+    private String email;
 
     @Enumerated(EnumType.STRING)
     private Role role;
-
-    @Setter
-    private String kakaoAccessToken;
-
-
-    @Builder
-    public Member(String name, String ProfileImageUrl, Role role, Long kakaoId, String gender, String age_range, String kakaoAccessToken) {
-        this.name = name;
-        this.role = role;
-        this.profileImageUrl = ProfileImageUrl;
-        this.ageRange = age_range;
-        this.kakaoId = kakaoId;
-        this.gender = gender;
-        this.kakaoAccessToken = kakaoAccessToken;
-    }
 }
