@@ -1,11 +1,13 @@
 package letsit_backend.dto.project;
-import lombok.Getter;
-import lombok.Setter;
+
+import lombok.*;
 
 import java.util.List;
 
 @Getter
-@Setter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class ProjectDto {
     private Long postId;
     private String title;
