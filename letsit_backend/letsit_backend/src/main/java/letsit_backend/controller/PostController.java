@@ -26,7 +26,6 @@ public class PostController {
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/upload")
     public Response<PostResponseDto> createPost(@CurrentUser Member member, @Valid @RequestBody PostRequestDto requestDto) {
-        checkMemberAuthentication(member);
         PostResponseDto responseDto = postService.createPost(member, requestDto);
         return Response.success("구인 글이 성공적으로 등록되었습니다.", responseDto);
     }
@@ -34,7 +33,6 @@ public class PostController {
     // 게시글 수정
     @PutMapping("/{postId}/update")
     public Response<PostResponseDto> updatePost(@CurrentUser Member member, @PathVariable Long postId, @Valid @RequestBody PostRequestDto requestDto) {
-        checkMemberAuthentication(member);
         PostResponseDto updatedPost = postService.updatePost(member, postId, requestDto);
         return Response.success("구인 글이 성공적으로 수정되었습니다.", updatedPost);
     }
@@ -42,7 +40,6 @@ public class PostController {
     // 게시글 삭제
     @DeleteMapping("/delete/{postId}")
     public Response<?> deletePost(@CurrentUser Member member, @PathVariable("postId") Long postId) {
-        checkMemberAuthentication(member);
         postService.deletePost(member, postId);
         return Response.success("게시글이 성공적으로 삭제되었습니다.", null);
     }
@@ -67,13 +64,6 @@ public class PostController {
     public Response<List<PostResponseDto>> getAllPosts() {
         List<PostResponseDto> posts = postService.getRecruitingPostsByCreatedAt();
         return Response.success("모든 게시글 조회 성공", posts);
-    }
-
-    // Member null 체크 -> null이면 인증 실패 메시지 반환
-    private void checkMemberAuthentication(Member member) {
-        if (member == null) {
-            throw new CustomException(ErrorCode.UNAUTHORIZED);
-        }
     }
 }
 
