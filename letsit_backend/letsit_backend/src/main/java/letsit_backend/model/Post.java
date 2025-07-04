@@ -20,7 +20,6 @@ import java.util.function.Function;
 
 @Builder
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
@@ -309,6 +308,31 @@ public class Post {
                 existingLinks.add(newLink);               // 현재 Post에 추가
             }
         }
+    }
+
+    // 게시글 수정
+    public void updatePost(String title,
+                           String content,
+                           TotalPersonnel totalPersonnel,
+                           LocalDate recruitDueDate,
+                           ProjectPeriod projectPeriod,
+                           Difficulty difficulty,
+                           OnOff onOff,
+                           Area region,
+                           Area subRegion,
+                           String preference,
+                           AgeGroup ageGroup) {
+        this.title = title;
+        this.content = content;
+        this.totalPersonnel = totalPersonnel;
+        this.recruitDueDate = recruitDueDate;
+        this.projectPeriod = projectPeriod;
+        this.difficulty = difficulty;
+        this.onOff = onOff;
+        this.region = region;
+        this.subRegion = subRegion;
+        this.preference = preference;
+        this.ageGroup = ageGroup;
     }
 
 }

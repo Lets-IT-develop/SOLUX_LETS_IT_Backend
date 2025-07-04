@@ -105,18 +105,20 @@ public class PostService {
             throw new CustomException(ErrorCode.UNAUTHORIZED);
         }
 
-        post.setTitle(requestDto.getTitle());
-        post.setContent(requestDto.getContent());
-        post.setTotalPersonnel(requestDto.getTotalPersonnel());
-        post.setRecruitDueDate(requestDto.getRecruitDueDate());
-        post.setPreference(requestDto.getPreference());
-        post.setRegion(region);
-        post.setSubRegion(subRegion);
-        post.setProjectPeriod(requestDto.getProjectPeriod());
-        post.setAgeGroup(requestDto.getAgeGroup());
-        post.setDifficulty(requestDto.getDifficulty());
-        post.setOnOff(requestDto.getOnOff());
-        post.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
+        // 게시글 정보 수정
+        post.updatePost(
+                requestDto.getTitle(),
+                requestDto.getContent(),
+                requestDto.getTotalPersonnel(),
+                requestDto.getRecruitDueDate(),
+                requestDto.getProjectPeriod(),
+                requestDto.getDifficulty(),
+                requestDto.getOnOff(),
+                region,
+                subRegion,
+                requestDto.getPreference(),
+                requestDto.getAgeGroup()
+        );
 
         // 소프트 스킬, 기술 스택, 카테고리 값 찾아옴
         List<SkillStack> skillStacks = skillStackRepository.findAllByStackNameIn(requestDto.getStack());
