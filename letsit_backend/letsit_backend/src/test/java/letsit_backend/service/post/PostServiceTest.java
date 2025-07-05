@@ -4,6 +4,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import letsit_backend.dto.post.PostRequestDto;
 import letsit_backend.dto.post.PostResponseDto;
+import letsit_backend.exception.CustomException;
 import letsit_backend.model.Member;
 import letsit_backend.model.Post;
 import letsit_backend.model.Role;
@@ -13,15 +14,12 @@ import letsit_backend.service.PostService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.commons.logging.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.function.Supplier;
-import java.util.logging.Logger;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -167,8 +165,8 @@ class PostServiceTest {
         // when & then
         try {
             postService.closePost(member2, createdPost.getPostId());
-        } catch (IllegalArgumentException e) {
-            assertThat(e.getMessage()).isEqualTo("작성자만 마감처리할 수 있습니다.");
+        } catch (CustomException e) {
+            assertThat(e.getMessage()).isEqualTo("게시글 작성자와 일치하지 않습니다.");
         }
     }
 
@@ -186,7 +184,7 @@ class PostServiceTest {
         // when & then
         try {
             postService.closePost(member, createdPost.getPostId());
-        } catch (IllegalArgumentException e) {
+        } catch (CustomException e) {
             assertThat(e.getMessage()).isEqualTo("이미 마감된 게시글입니다.");
         }
     }
@@ -233,13 +231,15 @@ class PostServiceTest {
         post.setContent("프로젝트 내용");
         post.setTotalPersonnel(Post.TotalPersonnel.FIVE);
         post.setRecruitDueDate(LocalDate.parse("2025-07-31"));
-        post.setProjectPeriod(Post.ProjectPeriod.ONE_MONTH);
+        post.setProjectStartDate(LocalDate.parse("2025-08-01"));
+        post.setProjectEndDate(LocalDate.parse("2025-08-31"));
         post.setDifficulty(Post.Difficulty.BASIC);
         post.setOnOff(Post.OnOff.ON);
         post.setRegionId(1L);
         post.setSubRegionId(1L);
         post.setPreference("인근 거주자 우대");
-        post.setAgeGroup(Post.AgeGroup.S20A);
+        post.setAgeGroup(Post.AgeGroup.S20);
+        post.setAgeGroupDetail(Post.AgeGroupDetail.MID);
         post.setStack(List.of("java", "python"));
         post.setSoftSkills(List.of("통솔력이 있어요"));
         post.setCategories(List.of("데브옵스"));
