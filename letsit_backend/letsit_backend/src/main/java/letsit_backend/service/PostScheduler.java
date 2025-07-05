@@ -23,7 +23,7 @@ public class PostScheduler {
         // 만료된 게시글을 찾아서 상태를 업데이트
         for (Post post : openPosts) {
             if (post.getRecruitDueDate().isBefore(today)) {
-                post.setDeadline(true);
+                post.setClosed();
             }
         }
     }
