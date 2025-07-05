@@ -46,7 +46,8 @@ public class PostService {
                 .content(requestDto.getContent())
                 .totalPersonnel(requestDto.getTotalPersonnel())
                 .recruitDueDate(requestDto.getRecruitDueDate())
-                .projectPeriod(requestDto.getProjectPeriod())
+                .projectStartDate(requestDto.getProjectStartDate())
+                .projectEndDate(requestDto.getProjectEndDate())
                 .difficulty(requestDto.getDifficulty())
                 .onOff(requestDto.getOnOff())
                 .region(region)
@@ -58,6 +59,7 @@ public class PostService {
                 .deadline(false)
                 .preference(requestDto.getPreference())
                 .ageGroup(requestDto.getAgeGroup())
+                .ageGroupDetail(requestDto.getAgeGroupDetail())
                 .build();
 
         // 기술 스택, 소프트 스킬, 카테고리 값이 없을 경우 빈 리스트로 초기화
@@ -111,13 +113,15 @@ public class PostService {
                 requestDto.getContent(),
                 requestDto.getTotalPersonnel(),
                 requestDto.getRecruitDueDate(),
-                requestDto.getProjectPeriod(),
+                requestDto.getProjectStartDate(),
+                requestDto.getProjectEndDate(),
                 requestDto.getDifficulty(),
                 requestDto.getOnOff(),
                 region,
                 subRegion,
                 requestDto.getPreference(),
-                requestDto.getAgeGroup()
+                requestDto.getAgeGroup(),
+                requestDto.getAgeGroupDetail()
         );
 
         // 소프트 스킬, 기술 스택, 카테고리 값 찾아옴
@@ -172,7 +176,7 @@ public class PostService {
         Post post = findPostById(postId);
 
         if (!post.getMember().getUserId().equals(member.getUserId())) {
-            throw new CustomException(ErrorCode.UNAUTHORIZED);
+            throw new CustomException(ErrorCode.NOT_MATCHING_USER);
         }
 
         if (post.isClosed()) {

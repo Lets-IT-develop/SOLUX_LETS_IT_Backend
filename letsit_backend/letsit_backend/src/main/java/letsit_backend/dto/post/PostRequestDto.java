@@ -56,9 +56,13 @@ public class PostRequestDto {
     @Size(min = 1, message = "최소 한 개 이상의 카테고리가 필요합니다.")
     private List<@NotBlank(message = "빈 카테고리 이름은 허용되지 않습니다.") String> categories;
 
-    @NotNull(message = "프로젝트 기간은 필수입니다.")
-    private Post.ProjectPeriod projectPeriod;
-    
+    private LocalDate projectStartDate;
+
+    @Future(message = "종료일은 현재보다 이후여야 합니다.")
+    private LocalDate projectEndDate;
+
     @NotNull(message = "연령대는 필수입니다.")
     private Post.AgeGroup ageGroup;
+
+    private Post.AgeGroupDetail ageGroupDetail;
 }

@@ -28,13 +28,15 @@ public class PostResponseDto {
     private Boolean deadline;
     private List<String> categories;
     private Post.AgeGroup ageGroup;
+    private Post.AgeGroupDetail ageGroupDetail;
     private String region;
     private String subRegion;
     private Timestamp createdAt;
     private Timestamp updatedAt;
     private int viewCount;
     private int scrapCount;
-    private Post.ProjectPeriod projectPeriod;
+    private LocalDate projectStartDate;
+    private LocalDate projectEndDate;
     private List<CommentResponseDto> comments;
 
     public PostResponseDto(Long userId,
@@ -51,13 +53,15 @@ public class PostResponseDto {
                            Boolean deadline,
                            List<String> categories,
                            Post.AgeGroup ageGroup,
+                           Post.AgeGroupDetail ageGroupDetail,
                            String region,
                            String subRegion,
                            Timestamp createdAt,
                            Timestamp updatedAt,
                            int viewCount,
                            int scrapCount,
-                           Post.ProjectPeriod projectPeriod,
+                           LocalDate projectStartDate,
+                           LocalDate projectEndDate,
                            List<CommentResponseDto> comments) {
         this.userId = userId;
         this.postId = postId;
@@ -73,13 +77,15 @@ public class PostResponseDto {
         this.deadline = deadline;
         this.categories = categories;
         this.ageGroup = ageGroup;
+        this.ageGroupDetail = ageGroupDetail;
         this.region = region;
         this.subRegion = subRegion;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.viewCount = viewCount;
         this.scrapCount = scrapCount;
-        this.projectPeriod = projectPeriod;
+        this.projectStartDate = projectStartDate;
+        this.projectEndDate = projectEndDate;
         this.comments = comments;
     }
 
@@ -105,13 +111,15 @@ public class PostResponseDto {
                         .map(pc -> pc.getCategory().getCategoryName())
                         .toList(),
                 post.getAgeGroup(),
+                post.getAgeGroupDetail(),
                 post.getRegion().getName(),
                 post.getSubRegion().getName(),
                 post.getCreatedAt(),
                 post.getUpdatedAt(),
                 post.getViewCount(),
                 post.getScrapCount(),
-                post.getProjectPeriod(),
+                post.getProjectStartDate(),
+                post.getProjectEndDate(),
                 comments
         );
     }

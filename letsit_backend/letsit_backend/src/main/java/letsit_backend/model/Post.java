@@ -47,8 +47,11 @@ public class Post {
     @Column(nullable = false)
     private LocalDate recruitDueDate;
 
-    @Enumerated(EnumType.STRING)
-    private ProjectPeriod projectPeriod;
+    @Column(nullable = false)
+    private LocalDate projectStartDate;
+
+    @Column(nullable = false)
+    private LocalDate projectEndDate;
 
     @Enumerated(EnumType.STRING)
     private Difficulty difficulty;
@@ -101,6 +104,11 @@ public class Post {
     @Column(nullable = false)
     private AgeGroup ageGroup;
 
+    // 연령대 초반, 중반, 후반
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private AgeGroupDetail ageGroupDetail;
+
     // ========= Enum =========
 
     // 인원
@@ -122,24 +130,6 @@ public class Post {
         @JsonCreator
         public static TotalPersonnel fromKorean(String korean) {
             return KoreanEnum.fromKorean(TotalPersonnel.class, korean);
-        }
-    }
-
-    // 프로젝트 기간
-    @AllArgsConstructor
-    @Getter
-    public enum ProjectPeriod implements KoreanEnum {
-        ONE_MONTH("1개월"),
-        THREE_MONTHS("3개월"),
-        SIX_MONTHS("6개월"),
-        ONE_YEAR_PLUS("1년 이상");
-
-        @JsonValue
-        private final String korean;
-
-        @JsonCreator
-        public static ProjectPeriod fromKorean(String korean) {
-            return KoreanEnum.fromKorean(ProjectPeriod.class, korean);
         }
     }
 
@@ -182,9 +172,9 @@ public class Post {
     @Getter
     public enum AgeGroup implements KoreanEnum {
         S10("10대"),
-        S20A("20대"),
-        S20B("30대"),
-        S20C("40대 이상");
+        S20("20대"),
+        S30("30대"),
+        S40("40대 이상");
 
         @JsonValue
         private final String korean;
@@ -192,6 +182,23 @@ public class Post {
         @JsonCreator
         public static AgeGroup fromKorean(String korean) {
             return KoreanEnum.fromKorean(AgeGroup.class, korean);
+        }
+    }
+
+    // 연령대 상세 (초반, 중반, 후반)
+    @AllArgsConstructor
+    @Getter
+    public enum AgeGroupDetail implements KoreanEnum {
+        EARLY("초반"),
+        MID("중반"),
+        LATE("후반");
+
+        @JsonValue
+        private final String korean;
+
+        @JsonCreator
+        public static AgeGroupDetail fromKorean(String korean) {
+            return KoreanEnum.fromKorean(AgeGroupDetail.class, korean);
         }
     }
 
@@ -315,24 +322,28 @@ public class Post {
                            String content,
                            TotalPersonnel totalPersonnel,
                            LocalDate recruitDueDate,
-                           ProjectPeriod projectPeriod,
+                           LocalDate projectStartDate,
+                           LocalDate projectEndDate,
                            Difficulty difficulty,
                            OnOff onOff,
                            Area region,
                            Area subRegion,
                            String preference,
-                           AgeGroup ageGroup) {
+                           AgeGroup ageGroup,
+                           AgeGroupDetail ageGroupDetail) {
         this.title = title;
         this.content = content;
         this.totalPersonnel = totalPersonnel;
         this.recruitDueDate = recruitDueDate;
-        this.projectPeriod = projectPeriod;
+        this.projectStartDate = projectStartDate;
+        this.projectEndDate = projectEndDate;
         this.difficulty = difficulty;
         this.onOff = onOff;
         this.region = region;
         this.subRegion = subRegion;
         this.preference = preference;
         this.ageGroup = ageGroup;
+        this.ageGroupDetail = ageGroupDetail;
     }
 
 }

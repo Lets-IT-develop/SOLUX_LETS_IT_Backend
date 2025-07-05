@@ -2,6 +2,7 @@ package letsit_backend.dto.project;
 
 import lombok.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Getter
@@ -17,5 +18,6 @@ public class ProjectDto {
     private List<String> stack;
     private String difficulty;
     private Long userId;
-    private String projectPeriod;
+    private LocalDate projectStartDate;
+    private LocalDate projectEndDate;
 }

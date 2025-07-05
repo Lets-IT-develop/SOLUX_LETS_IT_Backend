@@ -81,7 +81,8 @@ public class ProjectService {
                         .toList())
                 .difficulty(post.getDifficulty().getKorean())
                 .userId(post.getMember().getUserId())
-                .projectPeriod(post.getProjectPeriod().getKorean())
+                .projectStartDate(post.getProjectStartDate())
+                .projectEndDate(post.getProjectEndDate())
                 .build();
     }
 
