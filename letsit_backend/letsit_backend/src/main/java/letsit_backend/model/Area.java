@@ -6,7 +6,6 @@ import lombok.*;
 import java.util.List;
 
 @Getter
-@Setter
 @NoArgsConstructor
 @Entity
 public class Area {
@@ -29,14 +28,4 @@ public class Area {
         this.name = name;
         this.parent = parent;
     }
-
-
-//    public Area(String name, Area parent) {
-//        this.name = name;
-//        this.parent = parent;
-//    }
-//
-//    public Area(String name) {
-//        this.name = name;
-//    }
 }
