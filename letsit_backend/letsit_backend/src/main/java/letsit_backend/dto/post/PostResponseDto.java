@@ -4,14 +4,12 @@ import letsit_backend.dto.comment.CommentResponseDto;
 import letsit_backend.model.Post;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.List;
 
 @Getter
-@Setter
 @NoArgsConstructor
 public class PostResponseDto {
     private Long userId;
