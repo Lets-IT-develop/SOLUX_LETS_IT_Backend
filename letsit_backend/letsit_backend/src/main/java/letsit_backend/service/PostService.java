@@ -62,15 +62,10 @@ public class PostService {
                 .ageGroupDetail(requestDto.getAgeGroupDetail())
                 .build();
 
-        // 기술 스택, 소프트 스킬, 카테고리 값이 없을 경우 빈 리스트로 초기화
-        List<String> stackNames = Optional.ofNullable(requestDto.getStack()).orElse(List.of());
-        List<String> softSkillNames = Optional.ofNullable(requestDto.getSoftSkills()).orElse(List.of());
-        List<String> categoryNames = Optional.ofNullable(requestDto.getCategories()).orElse(List.of());
-
         // 소프트 스킬, 기술 스택, 카테고리 연관관계 설정 -> 먼저 이름으로 값 찾아옴
-        List<SkillStack> skillStacks = skillStackRepository.findAllByStackNameIn(stackNames);
-        List<SoftSkill> softSkills = softSkillRepository.findAllBySoftSkillNameIn(softSkillNames);
-        List<Category> categories = categoryRepository.findAllByCategoryNameIn(categoryNames);
+        List<SkillStack> skillStacks = skillStackRepository.findAllByStackNameIn(requestDto.getStack());
+        List<SoftSkill> softSkills = softSkillRepository.findAllBySoftSkillNameIn(requestDto.getSoftSkills());
+        List<Category> categories = categoryRepository.findAllByCategoryNameIn(requestDto.getCategories());
 
         // 찾아온 값과 request 값 개수가 동일한지 확인(누락된 값 없는지 확인)
         if (skillStacks.size() != requestDto.getStack().size()) {
@@ -196,11 +191,6 @@ public class PostService {
     }
 
     // findByX
-    private Member findMemberById(Long userId) {
-        return memberRepository.findById(userId)
-                .orElseThrow(() -> new CustomException(ErrorCode.UNAUTHORIZED));
-    }
-
     private Area findAreaById(Long areaId) {
         return areaRepository.findById(areaId)
                 .orElseThrow(() -> new CustomException(ErrorCode.AREA_NOT_FOUND));
