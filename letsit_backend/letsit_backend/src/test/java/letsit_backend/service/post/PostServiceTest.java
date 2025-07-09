@@ -112,13 +112,41 @@ class PostServiceTest {
         PostResponseDto createdPost = postService.createPost(member, requestDto);
 
         // when
-        requestDto.setTitle("수정된 제목");
-        requestDto.setContent("수정된 내용");
-        PostResponseDto updatedPost = postService.updatePost(member, createdPost.getPostId(), requestDto);
+        PostRequestDto updateDto = PostRequestDto.builder()
+                .title("수정된 제목")
+                .content("수정된 내용")
+                .totalPersonnel(Post.TotalPersonnel.FIVE)
+                .recruitDueDate(LocalDate.parse("2025-08-31"))
+                .projectStartDate(LocalDate.parse("2025-09-01"))
+                .projectEndDate(LocalDate.parse("2025-09-30"))
+                .difficulty(Post.Difficulty.ADVANCED)
+                .onOff(Post.OnOff.ON)
+                .regionId(1L)
+                .subRegionId(1L)
+                .preference("인근 거주자 우대")
+                .ageGroup(Post.AgeGroup.S20)
+                .ageGroupDetail(Post.AgeGroupDetail.MID)
+                .stack(List.of("java"))
+                .softSkills(List.of("통솔력이 있어요"))
+                .categories(List.of("프론트엔드 개발"))
+                .build();
+        PostResponseDto updatedPost = postService.updatePost(member, createdPost.getPostId(), updateDto);
 
         // then
         assertThat(updatedPost.getTitle()).isEqualTo("수정된 제목");
         assertThat(updatedPost.getContent()).isEqualTo("수정된 내용");
+        assertThat(updatedPost.getTotalPersonnel()).isEqualTo(Post.TotalPersonnel.FIVE);
+        assertThat(updatedPost.getRecruitDueDate()).isEqualTo(LocalDate.parse("2025-08-31"));
+        assertThat(updatedPost.getProjectStartDate()).isEqualTo(LocalDate.parse("2025-09-01"));
+        assertThat(updatedPost.getProjectEndDate()).isEqualTo(LocalDate.parse("2025-09-30"));
+        assertThat(updatedPost.getDifficulty()).isEqualTo(Post.Difficulty.ADVANCED);
+        assertThat(updatedPost.getOnOff()).isEqualTo(Post.OnOff.ON);
+        assertThat(updatedPost.getPreference()).isEqualTo("인근 거주자 우대");
+        assertThat(updatedPost.getAgeGroup()).isEqualTo(Post.AgeGroup.S20);
+        assertThat(updatedPost.getAgeGroupDetail()).isEqualTo(Post.AgeGroupDetail.MID);
+        assertThat(updatedPost.getStack()).containsExactly("java");
+        assertThat(updatedPost.getSoftSkills()).containsExactly("통솔력이 있어요");
+        assertThat(updatedPost.getCategories()).containsExactly("프론트엔드 개발");
     }
 
     // 게시글 삭제
@@ -226,23 +254,25 @@ class PostServiceTest {
     }
 
     private PostRequestDto buildPostRequest() {
-        PostRequestDto post = new PostRequestDto();
-        post.setTitle("프로젝트 제목");
-        post.setContent("프로젝트 내용");
-        post.setTotalPersonnel(Post.TotalPersonnel.FIVE);
-        post.setRecruitDueDate(LocalDate.parse("2025-07-31"));
-        post.setProjectStartDate(LocalDate.parse("2025-08-01"));
-        post.setProjectEndDate(LocalDate.parse("2025-08-31"));
-        post.setDifficulty(Post.Difficulty.BASIC);
-        post.setOnOff(Post.OnOff.ON);
-        post.setRegionId(1L);
-        post.setSubRegionId(1L);
-        post.setPreference("인근 거주자 우대");
-        post.setAgeGroup(Post.AgeGroup.S20);
-        post.setAgeGroupDetail(Post.AgeGroupDetail.MID);
-        post.setStack(List.of("java", "python"));
-        post.setSoftSkills(List.of("통솔력이 있어요"));
-        post.setCategories(List.of("데브옵스"));
+        // 게시글 요청 DTO 생성
+        PostRequestDto post = PostRequestDto.builder()
+                .title("프로젝트 제목")
+                .content("프로젝트 내용")
+                .totalPersonnel(Post.TotalPersonnel.FIVE)
+                .recruitDueDate(LocalDate.parse("2025-07-31"))
+                .projectStartDate(LocalDate.parse("2025-08-01"))
+                .projectEndDate(LocalDate.parse("2025-08-31"))
+                .difficulty(Post.Difficulty.BASIC)
+                .onOff(Post.OnOff.ON)
+                .regionId(1L) // 예시로 1번 지역 ID 사용
+                .subRegionId(1L) // 예시로 1번 하위 지역 ID 사용
+                .preference("인근 거주자 우대")
+                .ageGroup(Post.AgeGroup.S20)
+                .ageGroupDetail(Post.AgeGroupDetail.MID)
+                .stack(List.of("java", "python"))
+                .softSkills(List.of("통솔력이 있어요"))
+                .categories(List.of("데브옵스"))
+                .build();
         return post;
     }
 
