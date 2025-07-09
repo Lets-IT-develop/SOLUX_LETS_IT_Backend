@@ -239,11 +239,7 @@ public class Post {
                 newSkills, // 새로 연결할 소프트스킬 리스트
                 PostSoftSkill::getSoftSkill, // 기존 연결에서 SoftSkill 추출
                 PostSoftSkill::new, // 새 PostSoftSkill 생성
-                link -> { // 제거 시 역방향 정리
-                    link.getSoftSkill().getPostSoftSkills().remove(link);
-                    link.setPost(null);
-                    link.setSoftSkill(null);
-                }
+                PostSoftSkill::unlink // 제거 시 역방향 정리s
         );
     }
 
@@ -254,11 +250,7 @@ public class Post {
                 newCategories, // 새로 연결할 카테고리 리스트
                 PostCategory::getCategory, // 기존 연결에서 Category 추출
                 PostCategory::new, // 새 PostCategory 생성
-                link -> { // 제거 시 역방향 정리
-                    link.getCategory().getPostCategories().remove(link);
-                    link.setPost(null);
-                    link.setCategory(null);
-                }
+                PostCategory::unlink // 제거 시 역방향 정리
         );
     }
 
@@ -269,11 +261,7 @@ public class Post {
                 newStacks,                 // 새로 연결할 대상 리스트
                 PostSkillStack::getSkillStack,  // 기존 연결에서 SkillStack 추출
                 PostSkillStack::new,            // 새 PostSkillStack 생성
-                link -> {                      // 제거 시 역방향 정리
-                    link.getSkillStack().getPostStacks().remove(link);
-                    link.setPost(null);
-                    link.setSkillStack(null);
-                }
+                PostSkillStack::unlink // 제거 시 역방향 정리s
         );
     }
 
