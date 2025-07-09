@@ -7,8 +7,6 @@ import java.util.List;
 
 @Getter
 @Builder
-@AllArgsConstructor
-@NoArgsConstructor
 public class ProjectDto {
     private Long postId;
     private String title;
