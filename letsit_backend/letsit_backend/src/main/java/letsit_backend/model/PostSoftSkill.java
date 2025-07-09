@@ -6,7 +6,6 @@ import lombok.*;
 @Entity
 @Builder
 @Getter
-@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 public class PostSoftSkill {
@@ -26,5 +25,17 @@ public class PostSoftSkill {
     public PostSoftSkill(Post post, SoftSkill softSkill) {
         this.post = post;
         this.softSkill = softSkill;
+    }
+
+    // === 연관관계 편의 메서드 ===
+    public void unlink() {
+        if (softSkill != null) {
+            softSkill.getPostSoftSkills().remove(this);
+            softSkill = null;
+        }
+        if (post != null) {
+            post.getPostSoftSkills().remove(this);
+            post = null;
+        }
     }
 }

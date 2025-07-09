@@ -6,7 +6,6 @@ import lombok.*;
 @Entity
 @Builder
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class PostCategory {
@@ -26,5 +25,17 @@ public class PostCategory {
     public PostCategory(Post post, Category category) {
         this.post = post;
         this.category = category;
+    }
+
+    // === 연관관계 편의 메서드 ===
+    public void unlink() {
+        if (category != null) {
+            category.getPostCategories().remove(this);
+            category = null;
+        }
+        if (post != null) {
+            post.getPostCategories().remove(this);
+            post = null;
+        }
     }
 }

@@ -5,7 +5,6 @@ import lombok.*;
 
 @Entity
 @Getter
-@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 public class PostSkillStack {
@@ -24,5 +23,17 @@ public class PostSkillStack {
     public PostSkillStack(Post post, SkillStack skillStack) {
         this.post = post;
         this.skillStack = skillStack;
+    }
+
+    // === 연관관계 편의 메서드 ===
+    public void unlink() {
+        if (skillStack != null) {
+            skillStack.getPostStacks().remove(this);
+            skillStack = null;
+        }
+        if (post != null) {
+            post.getPostSkillStacks().remove(this);
+            post = null;
+        }
     }
 }
