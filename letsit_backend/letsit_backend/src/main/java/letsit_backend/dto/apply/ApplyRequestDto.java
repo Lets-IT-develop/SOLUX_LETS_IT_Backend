@@ -5,8 +5,10 @@ import letsit_backend.model.Member;
 import letsit_backend.model.Post;
 import lombok.*;
 
+@Builder
+@AllArgsConstructor
 @Getter
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ApplyRequestDto {
     private Long postId;
     private Long userId;
