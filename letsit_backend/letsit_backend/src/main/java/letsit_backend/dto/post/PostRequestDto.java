@@ -5,15 +5,17 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import letsit_backend.model.Post;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.time.LocalDate;
 import java.util.List;
 
 @Getter
-@Setter
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor
 public class PostRequestDto {
     @NotBlank(message = "제목은 필수입니다.")
@@ -29,7 +31,6 @@ public class PostRequestDto {
     @Future(message = "마감일은 현재보다 이후여야 합니다.")
     private LocalDate recruitDueDate;
 
-    @NotBlank(message = "우대사항은 필수입니다.")
     private String preference;
 
     @NotNull(message = "기술 스택은 필수입니다.")
