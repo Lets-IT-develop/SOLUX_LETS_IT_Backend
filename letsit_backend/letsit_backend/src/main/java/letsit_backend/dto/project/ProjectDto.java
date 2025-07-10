@@ -1,11 +1,12 @@
 package letsit_backend.dto.project;
-import lombok.Getter;
-import lombok.Setter;
 
+import lombok.*;
+
+import java.time.LocalDate;
 import java.util.List;
 
 @Getter
-@Setter
+@Builder
 public class ProjectDto {
     private Long postId;
     private String title;
@@ -15,5 +16,6 @@ public class ProjectDto {
     private List<String> stack;
     private String difficulty;
     private Long userId;
-    private String projectPeriod;
+    private LocalDate projectStartDate;
+    private LocalDate projectEndDate;
 }
