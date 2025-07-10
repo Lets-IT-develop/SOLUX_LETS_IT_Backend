@@ -59,7 +59,7 @@ public class ApplyServiceTest {
         mockMember = Member.builder().userId(1L).build();
         mockPost = Post.builder()
                 .postId(1L)
-                .userId(mockMember)
+                .member(mockMember)
                 .recruitDueDate(LocalDate.now().plusDays(7)) // ← 모집 마감일 추가
                 .deadline(Boolean.FALSE)
                 .totalPersonnel(Post.TotalPersonnel.TWO) // 🔍 이 라인 추가
@@ -121,7 +121,7 @@ public class ApplyServiceTest {
         Apply apply = spy(mockApply);
         Member postOwner = Member.builder().userId(2L).build(); // 게시자
 
-        Post post = Post.builder().postId(1L).userId(postOwner).build();
+        Post post = Post.builder().postId(1L).member(postOwner).build();
         doReturn(post).when(apply).getPostId(); // 게시자 설정
         doReturn(Member.builder().userId(3L).build()).when(apply).getMember(); // 지원자 아님
 
@@ -139,7 +139,7 @@ public class ApplyServiceTest {
         Member actualApplicant = mockMember;
         Member postOwner = Member.builder().userId(2L).build();
 
-        Post post = Post.builder().postId(1L).userId(postOwner).build();
+        Post post = Post.builder().postId(1L).member(postOwner).build();
         doReturn(post).when(apply).getPostId();
         doReturn(actualApplicant).when(apply).getMember();
 
@@ -245,7 +245,7 @@ public class ApplyServiceTest {
     void getPendingApplicantProfiles_권한없음_예외() {
         Post post = Post.builder()
                 .postId(2L)
-                .userId(Member.builder().userId(2L).build()) // 다른 사용자가 작성한 게시글
+                .member(Member.builder().userId(2L).build()) // 다른 사용자가 작성한 게시글
                 .build();
 
         when(postRepository.findById(2L)).thenReturn(Optional.of(post));
@@ -310,7 +310,7 @@ public class ApplyServiceTest {
     void getApprovedApplicantProfiles_권한없음_예외() {
         Post post = Post.builder()
                 .postId(2L)
-                .userId(Member.builder().userId(2L).build()) // 다른 사용자가 작성한 게시글
+                .member(Member.builder().userId(2L).build()) // 다른 사용자가 작성한 게시글
                 .build();
 
         when(postRepository.findById(2L)).thenReturn(Optional.of(post));
