@@ -5,6 +5,7 @@ import letsit_backend.dto.apply.ApplyRequestDto;
 import letsit_backend.dto.apply.ApplyResponseDto;
 import letsit_backend.exception.ApplyErrorCode;
 import letsit_backend.exception.CommonErrorCode;
+import letsit_backend.exception.PostErrorCode;
 import letsit_backend.model.Apply;
 import letsit_backend.model.Member;
 import letsit_backend.model.Post;
@@ -14,7 +15,6 @@ import letsit_backend.repository.PostRepository;
 import letsit_backend.repository.ProfileRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,8 +36,7 @@ public class ApplyService {
      */
     @Transactional
     public ApplyResponseDto create(Long postId, Member member, ApplyRequestDto request) {
-        // TODO PostErrorCode로 처리
-        Post post = postRepository.findById(postId).orElseThrow(() -> new IllegalArgumentException("구인글이 존재하지 않습니다."));
+        Post post = postRepository.findById(postId).orElseThrow(PostErrorCode.POSTS_NOT_FOUND::getDefaultException);
         List<Apply> applies = applyRepository.findByPostId(post);
 
         // 이미 지원했는지 찾아보고
@@ -160,7 +159,7 @@ public class ApplyService {
 
     // 게시글 존재 여부 && 게시자 일치 여부 검증
     private Post getPostIfOwner(Long postId, Member member) {
-        Post post = postRepository.findById(postId).orElseThrow(() -> new IllegalArgumentException("해당 구인글이 존재하지 않습니다."));
+        Post post = postRepository.findById(postId).orElseThrow(PostErrorCode.POSTS_NOT_FOUND::getDefaultException);
         if (!member.equals(post.getMember())) {
             throw CommonErrorCode.FORBIDDEN.getDefaultException();
         }
