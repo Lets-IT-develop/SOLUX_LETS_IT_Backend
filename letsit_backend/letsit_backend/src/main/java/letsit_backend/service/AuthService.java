@@ -18,9 +18,7 @@ public class AuthService {
     private final RedisService redisService;
 
     // TODO 현재 무조건 새 AccessToken 발급함 -> CurrentUser 사용해서 유저 정보 확인 뒤 발급 여부 결정하도록
-    public Response<String> reissueToken(HttpServletRequest request, HttpServletResponse response) {
-
-        String refreshToken = getCookie(request, "Refresh");
+    public Response<String> reissueToken(String refreshToken, HttpServletResponse response) {
 
         if (refreshToken == null || jwtUtil.isExpired(refreshToken)) {
             return Response.fail("유효하지 않은 리프레시 토큰입니다.");
@@ -36,7 +34,7 @@ public class AuthService {
         String role = jwtUtil.getRole(refreshToken);
         long accessTokenMs = Duration.ofHours(6).toMillis();
 
-        response.addCookie(CookieUtil.createCookie("Authorization", jwtUtil.createJwt(username, role, accessTokenMs), 60 * 60 * 6));
+        response.addCookie(CookieUtil.createCookie("Authorization", jwtUtil.createJwt(username, role, accessTokenMs)));
 
         return Response.success("액세스 토큰 재발급 완료", null);
     }

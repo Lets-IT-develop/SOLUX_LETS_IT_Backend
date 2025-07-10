@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import letsit_backend.dto.Response;
 import letsit_backend.service.AuthService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -15,8 +16,8 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/reissue")
-    public Response reissue(HttpServletRequest request, HttpServletResponse response) {
-        return authService.reissueToken(request, response);
+    public Response reissue(@CookieValue(name = "Refresh", required = false) String refreshToken, HttpServletResponse response) {
+        return authService.reissueToken(refreshToken, response);
     }
 
     @PostMapping("/logout")

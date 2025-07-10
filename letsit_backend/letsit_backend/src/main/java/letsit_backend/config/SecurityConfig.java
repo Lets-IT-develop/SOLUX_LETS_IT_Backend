@@ -19,8 +19,10 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Collections;
+import java.util.List;
 
 @Slf4j
 @Configuration
@@ -33,6 +35,7 @@ public class SecurityConfig {
     private final JWTUtil jwtUtil;
     private final RedisService redisService;
 
+    // TODO JWTFilter에서 던지는 예외 처리
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, CustomSuccessHandler customSuccessHandler, RedisService redisService) throws Exception {
         http
@@ -85,17 +88,17 @@ public class SecurityConfig {
     }
 
 
-//    private CorsConfigurationSource corsConfigurationSource() {
-//        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-//        CorsConfiguration configuration = new CorsConfiguration();
-//        configuration.setAllowedOrigins(List.of("http://localhost:5173", "http://localhost:8080", "http://localhost:80", "http://172.20.8.238:80", "http://172.20.8.238:8080"));
-//        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-//        configuration.setAllowedHeaders(List.of("*"));
-//        configuration.setAllowCredentials(true);
-//        source.registerCorsConfiguration("/**", configuration);
-//
-//        log.info("Configured CORS with allowed origins: {}", configuration.getAllowedOrigins());
-//
-//        return source;
-//    }
+    private CorsConfigurationSource corsConfigurationSource() {
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(List.of("http://localhost:5173", "http://localhost:8080", "http://localhost:80", "http://172.20.8.238:80", "http://172.20.8.238:8080"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowCredentials(true);
+        source.registerCorsConfiguration("/**", configuration);
+
+        log.info("Configured CORS with allowed origins: {}", configuration.getAllowedOrigins());
+
+        return source;
+    }
 }

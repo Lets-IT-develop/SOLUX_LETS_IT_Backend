@@ -1,7 +1,6 @@
 package letsit_backend.oauth2;
 
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import letsit_backend.dto.auth.CustomOAuth2User;
@@ -34,7 +33,6 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
-        System.out.println("✅ CustomSuccessHandler 진입");
 
         CustomOAuth2User customOAuth2User = (CustomOAuth2User) authentication.getPrincipal();
 
@@ -52,7 +50,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         redisService.setRefreshToken(username, refreshToken, Duration.ofDays(7).toMillis());
 
         //쿠키로 토큰 전달 후 리다이렉트
-        response.addCookie(CookieUtil.createCookie("Authorization", accessToken, 60 * 60 * 6)); // 6시간
+        response.addCookie(CookieUtil.createCookie("Authorization", accessToken)); // 6시간
         response.addCookie(CookieUtil.createCookie("Refresh", refreshToken, 60 * 60 * 24 * 7)); // 7일
         boolean existMember = memberRepository.existsByUsername(username);
 
