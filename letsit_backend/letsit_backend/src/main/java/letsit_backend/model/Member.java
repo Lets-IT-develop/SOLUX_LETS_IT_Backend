@@ -24,17 +24,12 @@ public class Member {
     private String name;
 
     @Column
-    private String ageRange;
-
-    @Column
-    private String gender;
-
-    @Column
-    private String profileImageUrl;
+    private String email;
 
     @Enumerated(EnumType.STRING)
     private Role role;
 
+  
     public Member updateInfo(String email, String name) {
         this.email = email;
         this.name = name;
