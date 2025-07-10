@@ -60,42 +60,4 @@ public class ProfileController {
 
         return Response.success("sns 등록 완료", null);
     }
-
-     */
-
-    private Profile convertFromDtoToEntity(ProfileDto profileDto) {
-        Member member = memberService.getMemberById(profileDto.getUserId());
-        logger.debug("ProfileDto를 Profile 엔티티로 변환: {}", member);
-        return Profile.builder()
-                .profileId(profileDto.getProfileId())
-                .member(member)
-                .name(profileDto.getName())
-                .nickname(profileDto.getNickname())
-                .age(profileDto.getAge())
-                .sns(profileDto.getSns())
-                .profileImageUrl(profileDto.getProfileImageUrl())
-                .bio(profileDto.getBio())
-                .selfIntro(profileDto.getSelfIntro())
-                .skills(profileDto.getSkills())
-                .mannerScore(profileDto.getMannerScore())
-                .mannerTier(profileDto.getMannerTier())
-                .build();
-    }
-
-    private ProfileResponseDto convertToResponseDto(Profile profile) {
-        return new ProfileResponseDto(
-                profile.getProfileId(),
-                profile.getMember().getUserId(),
-                profile.getMannerTier(),
-                profile.getMannerScore(),
-                profile.getName(),
-                profile.getNickname(),
-                profile.getAge(),
-                profile.getSns(),
-                profile.getProfileImageUrl(),
-                profile.getBio(),
-                profile.getSelfIntro(),
-                profile.getSkills()
-        );
-    }
 }
