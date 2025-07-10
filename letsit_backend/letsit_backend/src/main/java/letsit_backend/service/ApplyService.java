@@ -1,26 +1,27 @@
 package letsit_backend.service;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import letsit_backend.dto.apply.ApplicantProfileDto;
 import letsit_backend.dto.apply.ApplyRequestDto;
 import letsit_backend.dto.apply.ApplyResponseDto;
+import letsit_backend.exception.ApplyErrorCode;
+import letsit_backend.exception.CommonErrorCode;
+import letsit_backend.exception.PostErrorCode;
 import letsit_backend.model.Apply;
 import letsit_backend.model.Member;
 import letsit_backend.model.Post;
 import letsit_backend.model.Profile;
 import letsit_backend.repository.ApplyRepository;
-import letsit_backend.repository.MemberRepository;
 import letsit_backend.repository.PostRepository;
 import letsit_backend.repository.ProfileRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.function.Predicate;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -30,80 +31,106 @@ public class ApplyService {
     private final ApplyRepository applyRepository;
     private final ProfileRepository profileRepository;
 
-    @PersistenceContext
-    private EntityManager entityManager;
-
-
+    /**
+     * 지원자 시점
+     */
+    @Transactional
     public ApplyResponseDto create(Long postId, Member member, ApplyRequestDto request) {
-        Post post = postRepository.findById(postId).orElseThrow(() -> new IllegalArgumentException("구인글이 존재하지 않습니다."));
+        Post post = postRepository.findById(postId).orElseThrow(PostErrorCode.POSTS_NOT_FOUND::getDefaultException);
         List<Apply> applies = applyRepository.findByPostId(post);
 
         // 이미 지원했는지 찾아보고
         boolean alreadyApplied = applies.stream()
-                .anyMatch(apply -> apply.getUserId().getUserId().equals(member.getUserId()));
+                .anyMatch(apply -> apply.getMember().equals(member));
         if (alreadyApplied) {
-            throw new IllegalArgumentException("이미 지원한 게시글입니다.");
+            throw ApplyErrorCode.ALREADY_APPLIED.getDefaultException();
         }
 
         Apply apply = request.toEntity(post, member);
         Apply submittedApply = applyRepository.save(apply);
 
-        return new ApplyResponseDto(submittedApply);
+        return ApplyResponseDto.builder()
+                .applyId(submittedApply.getApplyId())
+                .userId(submittedApply.getMember().getUserId())
+                .preferStack(submittedApply.getPreferStack())
+                .desiredField(submittedApply.getDesiredField())
+                .applyContent(submittedApply.getApplyContent())
+                .contact(submittedApply.getContact())
+                .applyCreateDate(submittedApply.getApplyCreateDate())
+                .build();
     }
 
     public ApplyResponseDto read(Long applyId, Member member) {
-        Apply apply = applyRepository.findById(applyId).orElseThrow(() -> new IllegalArgumentException("신청서가 존재하지 않습니다."));
+        Apply apply = applyRepository.findById(applyId).orElseThrow(ApplyErrorCode.APPLICATION_NOT_FOUND::getDefaultException);
 
         // 요청한 사람이 지원자 || 게시자 인지 확인
-//        if (!member.getUserId().equals(apply.getUserId().getUserId()) || !member.getUserId().equals(apply.getPostId().getUserId().getUserId())) {
-//            throw new AccessDeniedException("접근 권한이 없습니다.");
-//        }
-        return new ApplyResponseDto(apply);
+        if (!member.equals(apply.getMember()) && !member.equals(apply.getPostId().getMember())) {
+            throw CommonErrorCode.FORBIDDEN.getDefaultException();
+        }
+
+        return ApplyResponseDto.builder()
+                .applyId(apply.getApplyId())
+                .userId(apply.getMember().getUserId())
+                .preferStack(apply.getPreferStack())
+                .desiredField(apply.getDesiredField())
+                .applyContent(apply.getApplyContent())
+                .contact(apply.getContact())
+                .applyCreateDate(apply.getApplyCreateDate())
+                .build();
     }
 
+    @Transactional
     public void delete(Long applyId, Member member) {
-        Apply apply = applyRepository.findById(applyId).orElseThrow(() -> new IllegalArgumentException("신청서가 존재하지 않습니다."));
-        if (!member.getUserId().equals(apply.getUserId().getUserId())) {
-            throw new AccessDeniedException("접근 권한이 없습니다.");
+        Apply apply = applyRepository.findById(applyId).orElseThrow(ApplyErrorCode.APPLICATION_NOT_FOUND::getDefaultException);
+
+        if (!member.equals(apply.getMember())) {
+            throw CommonErrorCode.FORBIDDEN.getDefaultException();
         }
+
         applyRepository.delete(apply);
     }
 
 
-    // 지원자 목록(프사, 닉넴) 리스트업
-    @Transactional(readOnly = true)
-    public List<ApplicantProfileDto> getApplicantProfiles(Long postId, Member member) {
-        Post post = postRepository.findById(postId).orElseThrow(() -> new IllegalArgumentException("구인글이 존재하지 않습니다."));
-        log.info(member.getUserId().toString());
-        log.info(post.getUserId().getUserId().toString());
-        if (!member.getUserId().equals(post.getUserId().getUserId())) {
-            throw new AccessDeniedException("접근 권한이 없습니다.");
-        }
-        List<Apply> applies = applyRepository.findByPostId(post);
-
-        log.info("Applicants for post Id : {}", postId);
-        return applies.stream()
-                .filter(Apply::isNullYet)
-                .map(apply-> {
-                    Member applicant = apply.getUserId();
-                    Profile profile = profileRepository.findByUserId(applicant);
-                    return ApplicantProfileDto.fromEntity(profile, apply);
-                })
-                .collect(Collectors.toList());
+    /**
+     * 게시자 시점
+     */
+    // 대기중 지원자 목록 리스트업
+    public List<ApplicantProfileDto> getPendingApplicantProfiles(Long postId, Member member) {
+        return getApplicantProfilesByFilter(postId, member, Apply::isNullYet);
     }
 
-    @Transactional(readOnly = true)
+    // 합류한 지원자 목록 리스트업
     public List<ApplicantProfileDto> getApprovedApplicantProfiles(Long postId, Member member) {
-        Post post = postRepository.findById(postId).orElseThrow(() -> new IllegalArgumentException("Invalid post ID"));
-        if (!member.getUserId().equals(post.getUserId().getUserId())) {
-            throw new AccessDeniedException("접근 권한이 없습니다.");
-        }
-        List<Apply> applies = applyRepository.findByPostId(post);
+        return getApplicantProfilesByFilter(postId, member, Apply::isApproved);
+    }
+
+    // 지원자 프로필 리스트 취합
+    private List<ApplicantProfileDto> getApplicantProfilesByFilter(Long postId, Member member, Predicate<Apply> filter) {
+        // 게시글 조회 및 권한 확인
+        Post post = getPostIfOwner(postId, member);
+
+        // Apply 목록 중 필터 조건에 해당하는 지원서만 필터링: 승인 or Null
+        List<Apply> applies = applyRepository.findByPostId(post)
+                .stream()
+                .filter(filter)
+                .toList();
+
+        // 각 Apply 객체에서 지원자 Member 객체만 추출
+        List<Member> applicants = applies.stream()
+                .map(Apply::getMember)
+                .collect(Collectors.toList());
+
+        // 지원자 Member 객체 에 대응하는 Profile 객체들을 O(1)에 조회
+        List<Profile> profiles = profileRepository.findByMemberIn(applicants);
+
+        // userId를 키로 하는 Profile Map 구성(빠른 조회 목적)
+        Map<Long, Profile> profileMap = profiles.stream()
+                .collect(Collectors.toMap(p -> p.getMember().getUserId(), p -> p));
+
+        // 각 Apply에 대해 해당 지원자의 Profile을 찾아 ApplicantProfileDto로 매핑 후 반환
         return applies.stream()
-                .filter(Apply::isApproved)
                 .map(apply -> {
-                    Member applicant = apply.getUserId();
-                    Profile profile = profileRepository.findByUserId(applicant);
+                    Profile profile = profileMap.get(apply.getMember().getUserId());
                     return ApplicantProfileDto.fromEntity(profile, apply);
                 })
                 .collect(Collectors.toList());
@@ -112,26 +139,30 @@ public class ApplyService {
     // 특정 지원자 승인 로직
     @Transactional
     public void approveApplicant(Long postId, Long applyId, Member member) {
-        // log.info("Approving application. Post ID: {}, Apply ID: {}", postId, applyId);
-        Post post = postRepository.findById(postId).orElseThrow(() -> new IllegalArgumentException("해당 구인글이 존재하지 않습니다."));
-        if (!member.getUserId().equals(post.getUserId().getUserId())) {
-            throw new AccessDeniedException("접근 권한이 없습니다.");
-        }
-        Apply apply = applyRepository.findById(applyId).orElseThrow(() -> new IllegalArgumentException("해당 지원서가 존재하지 않습니다."));
+        Post post = getPostIfOwner(postId, member);
+        Apply apply = applyRepository.findById(applyId).orElseThrow(ApplyErrorCode.APPLICATION_NOT_FOUND::getDefaultException);
 
         post.approval(apply);
         applyRepository.save(apply);
         log.info("Application approved. Apply ID: {}", applyId);
     }
+
     // 특정 지원자 거절 로직
+    @Transactional
     public void rejectApplicant(Long postId, Long applyId, Member member) {
-        Post post = postRepository.findById(postId).orElseThrow(() -> new IllegalArgumentException("해당 구인글이 존재하지 않습니다."));
-        if (!member.getUserId().equals(post.getUserId().getUserId())) {
-            throw new AccessDeniedException("접근 권한이 없습니다.");
-        }
-        Apply apply = applyRepository.findById(applyId).orElseThrow(() -> new IllegalArgumentException("해당 지원서가 존재하지 않습니다."));
+        Post post = getPostIfOwner(postId, member);
+        Apply apply = applyRepository.findById(applyId).orElseThrow(ApplyErrorCode.APPLICATION_NOT_FOUND::getDefaultException);
 
         post.reject(apply);
         applyRepository.save(apply);
+    }
+
+    // 게시글 존재 여부 && 게시자 일치 여부 검증
+    private Post getPostIfOwner(Long postId, Member member) {
+        Post post = postRepository.findById(postId).orElseThrow(PostErrorCode.POSTS_NOT_FOUND::getDefaultException);
+        if (!member.equals(post.getMember())) {
+            throw CommonErrorCode.FORBIDDEN.getDefaultException();
+        }
+        return post;
     }
 }
