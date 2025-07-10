@@ -5,6 +5,7 @@ import letsit_backend.dto.Response;
 import letsit_backend.dto.profile.ProfileRequestDto;
 import letsit_backend.dto.profile.ProfileResponseDto;
 import letsit_backend.dto.profile.ProfileUpdateRequestDto;
+import letsit_backend.dto.profile.SNSRequestDto;
 import letsit_backend.model.Member;
 import letsit_backend.service.ProfileService;
 import org.slf4j.Logger;
@@ -49,6 +50,15 @@ public class ProfileController {
         profileService.updateProfile(userId, profileUpdateRequestDto);
 
         return Response.success("프로필 수정 완료", null);
+    }
+
+    @PutMapping
+    public Response<String> createSNS(@RequestBody SNSRequestDto snsRequestDto, @CurrentUser Member member) {
+        Long userId = member.getUserId();
+
+        profileService.createSNS(userId, snsRequestDto);
+
+        return Response.success("sns 등록 완료", null);
     }
 
 }

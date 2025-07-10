@@ -1,16 +1,13 @@
 package letsit_backend.dto.profile;
 
-import letsit_backend.model.Profile;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
 
 import java.util.List;
 import java.util.Map;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Getter
+@Builder
 public class ProfileResponseDto {
     private String nickname;
     private String profileImageUrl;

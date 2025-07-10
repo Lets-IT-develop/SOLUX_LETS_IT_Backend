@@ -1,7 +1,6 @@
 package letsit_backend.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import java.util.List;
@@ -9,8 +8,8 @@ import java.util.Map;
 
 
 @Builder
-@Getter @Setter
-@NoArgsConstructor //(access = AccessLevel.PROTECTED)
+@Getter
+@NoArgsConstructor
 @AllArgsConstructor
 @Entity
 public class Profile {
@@ -50,5 +49,9 @@ public class Profile {
         this.ageGroup = ageGroup;
         this.ageDetail = ageDetail;
         this.interests = Interests;
+    }
+
+    public void createSNS(Map<String, String> sns) {
+        this.sns = sns;
     }
 }
