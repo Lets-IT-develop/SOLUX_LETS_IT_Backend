@@ -65,7 +65,7 @@ public class ApplyService {
         Apply apply = applyRepository.findById(applyId).orElseThrow(ApplyErrorCode.APPLICATION_NOT_FOUND::getDefaultException);
 
         // 요청한 사람이 지원자 || 게시자 인지 확인
-        if (!member.equals(apply.getMember()) && !member.equals(apply.getPostId().getUserId())) {
+        if (!member.equals(apply.getMember()) && !member.equals(apply.getPostId().getMember())) {
             throw CommonErrorCode.FORBIDDEN.getDefaultException();
         }
 
@@ -161,7 +161,7 @@ public class ApplyService {
     // 게시글 존재 여부 && 게시자 일치 여부 검증
     private Post getPostIfOwner(Long postId, Member member) {
         Post post = postRepository.findById(postId).orElseThrow(() -> new IllegalArgumentException("해당 구인글이 존재하지 않습니다."));
-        if (!member.equals(post.getUserId())) {
+        if (!member.equals(post.getMember())) {
             throw CommonErrorCode.FORBIDDEN.getDefaultException();
         }
         return post;
