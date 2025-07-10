@@ -4,7 +4,7 @@ package letsit_backend.config;
 
 import jakarta.servlet.http.HttpServletRequest;
 import letsit_backend.jwt.JWTUtil;
-import letsit_backend.jwt.JwtFilter;
+import letsit_backend.jwt.JWTFilter;
 import letsit_backend.oauth2.CustomSuccessHandler;
 import letsit_backend.service.CustomOAuth2UserService;
 import lombok.extern.slf4j.Slf4j;
@@ -17,10 +17,8 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Collections;
-import java.util.List;
 
 @Slf4j
 @Configuration
@@ -67,7 +65,7 @@ public class SecurityConfig {
         http
                 .httpBasic((auth) -> auth.disable());
         http
-                .addFilterBefore(new JwtFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(new JWTFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
         //oath2 기본 설정 적용
         http
                 .oauth2Login((oauth2) -> oauth2

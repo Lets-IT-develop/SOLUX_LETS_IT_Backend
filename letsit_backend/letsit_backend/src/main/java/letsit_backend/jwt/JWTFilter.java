@@ -1,20 +1,11 @@
 package letsit_backend.jwt;
 
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.SignatureException;
 import jakarta.servlet.http.Cookie;
 import letsit_backend.dto.auth.CustomOAuth2User;
 import letsit_backend.dto.auth.MemberDto;
-import letsit_backend.model.Member;
-import letsit_backend.model.Role;
-import letsit_backend.repository.MemberRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -23,14 +14,12 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.Optional;
 
 @Component
-public class JwtFilter extends OncePerRequestFilter {
+public class JWTFilter extends OncePerRequestFilter {
     private final JWTUtil jwtUtil;
 
-    public JwtFilter(JWTUtil jwtUtil) {
+    public JWTFilter(JWTUtil jwtUtil) {
         this.jwtUtil = jwtUtil;
     }
 
@@ -40,12 +29,13 @@ public class JwtFilter extends OncePerRequestFilter {
         //cookie들을 불러온 뒤 Authorization Key에 담긴 쿠키를 찾음
         String authorization = null;
         Cookie[] cookies = request.getCookies();
-        for (Cookie cookie : cookies) {
 
-            System.out.println(cookie.getName());
-            if (cookie.getName().equals("Authorization")) {
-
-                authorization = cookie.getValue();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("Authorization".equals(cookie.getName())) {
+                    authorization = cookie.getValue();
+                    break; // Authorization 쿠키를 찾으면 반복 중단
+                }
             }
         }
 

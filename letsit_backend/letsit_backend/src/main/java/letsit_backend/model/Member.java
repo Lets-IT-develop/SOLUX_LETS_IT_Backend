@@ -5,7 +5,7 @@ import lombok.*;
 
 
 @Builder
-@Getter @Setter
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
@@ -34,4 +34,10 @@ public class Member {
 
     @Enumerated(EnumType.STRING)
     private Role role;
+
+    public Member updateInfo(String email, String name) {
+        this.email = email;
+        this.name = name;
+        return this;
+    }
 }
