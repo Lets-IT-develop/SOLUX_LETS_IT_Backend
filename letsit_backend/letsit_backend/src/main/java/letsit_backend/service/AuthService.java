@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import letsit_backend.dto.Response;
 import letsit_backend.jwt.JWTUtil;
+import letsit_backend.util.CookieUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -33,9 +34,9 @@ public class AuthService {
         }
 
         String role = jwtUtil.getRole(refreshToken);
-        String newAccessToken = jwtUtil.createJwt(username, role, Duration.ofHours(6).toMillis()); // 6시간
+        long accessTokenMs = Duration.ofHours(6).toMillis();
 
-        response.addCookie(createCookie("Authorization", newAccessToken));
+        response.addCookie(CookieUtil.createCookie("Authorization", jwtUtil.createJwt(username, role, accessTokenMs), 60 * 60 * 6));
 
         return Response.success("액세스 토큰 재발급 완료", null);
     }
@@ -53,8 +54,8 @@ public class AuthService {
             redisService.setBlackList(accessToken, remainingTime); // 액세스 토큰 블랙리스트 처리
         }
 
-        removeCookie("Authorization", response);
-        removeCookie("Refresh", response);
+        response.addCookie(CookieUtil.deleteCookie("Authorization"));
+        response.addCookie(CookieUtil.deleteCookie("Refresh"));
 
         return Response.success("로그아웃 성공", null);
     }
@@ -65,20 +66,5 @@ public class AuthService {
             if (cookie.getName().equals(name)) return cookie.getValue();
         }
         return null;
-    }
-
-    private Cookie createCookie(String key, String value) {
-        Cookie cookie = new Cookie(key, value);
-        cookie.setMaxAge(60 * 60 * 6); // 6시간
-        cookie.setPath("/");
-        cookie.setHttpOnly(true);
-        return cookie;
-    }
-
-    private void removeCookie(String key, HttpServletResponse response) {
-        Cookie cookie = new Cookie(key, null);
-        cookie.setMaxAge(0);
-        cookie.setPath("/");
-        response.addCookie(cookie);
     }
 }

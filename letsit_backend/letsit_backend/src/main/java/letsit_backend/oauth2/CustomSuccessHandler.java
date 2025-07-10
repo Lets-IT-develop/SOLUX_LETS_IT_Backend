@@ -8,6 +8,7 @@ import letsit_backend.dto.auth.CustomOAuth2User;
 import letsit_backend.jwt.JWTUtil;
 import letsit_backend.repository.MemberRepository;
 import letsit_backend.service.RedisService;
+import letsit_backend.util.CookieUtil;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
@@ -51,8 +52,8 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         redisService.setRefreshToken(username, refreshToken, Duration.ofDays(7).toMillis());
 
         //쿠키로 토큰 전달 후 리다이렉트
-        response.addCookie(createCookie("Authorization", accessToken));
-        response.addCookie(createCookie("Refresh", refreshToken));
+        response.addCookie(CookieUtil.createCookie("Authorization", accessToken, 60 * 60 * 6)); // 6시간
+        response.addCookie(CookieUtil.createCookie("Refresh", refreshToken, 60 * 60 * 24 * 7)); // 7일
         boolean existMember = memberRepository.existsByUsername(username);
 
         String redirectUrl;
@@ -64,17 +65,4 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         }
         response.sendRedirect(redirectUrl);
     }
-
-    private Cookie createCookie(String key, String value) {
-        Cookie cookie = new Cookie(key, value);
-        cookie.setMaxAge(3600 * 3600);
-        cookie.setPath("/");
-        cookie.setHttpOnly(true);
-        //cookie.setSecure(true) HTTPS에서만 전달
-        //cookie.setDomain("localhost"); // 배포시 도메인 명시
-        //TODO 배포시 samsite 설정 추가
-
-        return cookie;
-    }
-
 }

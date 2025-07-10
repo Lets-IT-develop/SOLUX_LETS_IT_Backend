@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import letsit_backend.dto.auth.CustomOAuth2User;
 import letsit_backend.dto.auth.MemberDto;
 import letsit_backend.service.RedisService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -16,15 +17,11 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+@RequiredArgsConstructor
 @Component
 public class JWTFilter extends OncePerRequestFilter {
     private final JWTUtil jwtUtil;
     private final RedisService redisService;
-
-    public JWTFilter(JWTUtil jwtUtil, RedisService redisService) {
-        this.jwtUtil = jwtUtil;
-        this.redisService = redisService;
-    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {

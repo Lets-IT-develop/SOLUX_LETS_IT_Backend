@@ -3,10 +3,12 @@ package letsit_backend.config;
 //import org.apache.catalina.filters.CorsFilter;
 
 import jakarta.servlet.http.HttpServletRequest;
-import letsit_backend.jwt.JWTUtil;
 import letsit_backend.jwt.JWTFilter;
+import letsit_backend.jwt.JWTUtil;
 import letsit_backend.oauth2.CustomSuccessHandler;
 import letsit_backend.service.CustomOAuth2UserService;
+import letsit_backend.service.RedisService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,20 +25,16 @@ import java.util.Collections;
 @Slf4j
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
 
     private final CustomOAuth2UserService customOAuth2UserService;
     private final CustomSuccessHandler customSuccessHandler;
     private final JWTUtil jwtUtil;
-
-    public SecurityConfig(CustomOAuth2UserService customOAuth2UserService, CustomSuccessHandler customSuccessHandler, JWTUtil jwtUtil) {
-        this.customOAuth2UserService = customOAuth2UserService;
-        this.customSuccessHandler = customSuccessHandler;
-        this.jwtUtil = jwtUtil;
-    }
+    private final RedisService redisService;
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, CustomSuccessHandler customSuccessHandler) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, CustomSuccessHandler customSuccessHandler, RedisService redisService) throws Exception {
         http
                 .cors(corsCustomizer -> corsCustomizer.configurationSource(new CorsConfigurationSource() {
 
@@ -65,7 +63,7 @@ public class SecurityConfig {
         http
                 .httpBasic((auth) -> auth.disable());
         http
-                .addFilterBefore(new JWTFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(new JWTFilter(jwtUtil, redisService), UsernamePasswordAuthenticationFilter.class);
         //oath2 기본 설정 적용
         http
                 .oauth2Login((oauth2) -> oauth2
