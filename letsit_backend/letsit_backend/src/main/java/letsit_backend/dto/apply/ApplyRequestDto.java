@@ -3,15 +3,12 @@ package letsit_backend.dto.apply;
 import letsit_backend.model.Apply;
 import letsit_backend.model.Member;
 import letsit_backend.model.Post;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
-@Getter
-@Setter
+@Builder
 @AllArgsConstructor
-@NoArgsConstructor
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ApplyRequestDto {
     private Long postId;
     private Long userId;
@@ -23,7 +20,7 @@ public class ApplyRequestDto {
     public Apply toEntity(Post post, Member member) {
         return Apply.builder()
                 .postId(post)
-                .userId(member)
+                .member(member)
                 .preferStack(preferStack)
                 .desiredField(desiredField)
                 .applyContent(applyContent)
