@@ -52,7 +52,7 @@ public class ProfileController {
         return Response.success("프로필 수정 완료", null);
     }
 
-    @PutMapping
+    @PutMapping("/sns")
     public Response<String> createSNS(@RequestBody SNSRequestDto snsRequestDto, @CurrentUser Member member) {
         Long userId = member.getUserId();
 
