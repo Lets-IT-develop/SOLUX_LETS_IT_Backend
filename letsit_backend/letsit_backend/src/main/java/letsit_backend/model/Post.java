@@ -18,6 +18,7 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+
 @Builder
 @Getter
 @NoArgsConstructor
@@ -85,6 +86,7 @@ public class Post {
 
     @Column(nullable = false)
     private Boolean deadline;
+
 
     @OneToMany(mappedBy = "post",
             cascade = CascadeType.ALL,
@@ -220,14 +222,14 @@ public class Post {
 
     public void approval(Apply apply) {
         if (!isClosed() && this.totalPersonnel.getValue() > this.currentPersonnel) {
-            apply.approved();
+            apply.approve();
             currentPersonnel++;
         }
     }
 
     public void reject(Apply apply) {
         if (!isClosed()) {
-            apply.refused();
+            apply.refuse();
         }
     }
 

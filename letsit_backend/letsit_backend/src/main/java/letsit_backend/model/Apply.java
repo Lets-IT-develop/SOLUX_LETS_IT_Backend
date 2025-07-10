@@ -2,7 +2,6 @@ package letsit_backend.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -12,7 +11,7 @@ import java.sql.Timestamp;
 @Builder
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor // TODO 해당문법의 쓰임확인하기
+@AllArgsConstructor
 @Entity
 @EntityListeners(AuditingEntityListener.class)
 public class Apply {
@@ -26,7 +25,7 @@ public class Apply {
 
     @ManyToOne
     @JoinColumn(name = "USER_ID")
-    private Member userId;
+    private Member member;
 
     @NotEmpty
     private String preferStack;
@@ -44,15 +43,22 @@ public class Apply {
     @CreatedDate
     private Timestamp applyCreateDate;
 
-    private Boolean confirm;
+    private Boolean approvalStatus;
 
 
-    public void approved() {
-        this.confirm = true;
+    public void approve() {
+        this.approvalStatus = true;
     }
-    public boolean isApproved() {return Boolean.TRUE.equals(this.confirm);}
-    public void refused() {
-        this.confirm = false;
+
+    public boolean isApproved() {
+        return Boolean.TRUE.equals(this.approvalStatus);
     }
-    public boolean isNullYet() {return this.confirm == null;}
+
+    public void refuse() {
+        this.approvalStatus = false;
+    }
+
+    public boolean isNullYet() {
+        return this.approvalStatus == null;
+    }
 }

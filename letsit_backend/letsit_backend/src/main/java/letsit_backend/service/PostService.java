@@ -3,8 +3,10 @@ package letsit_backend.service;
 import letsit_backend.dto.comment.CommentResponseDto;
 import letsit_backend.dto.post.PostRequestDto;
 import letsit_backend.dto.post.PostResponseDto;
+import letsit_backend.exception.CommonErrorCode;
 import letsit_backend.exception.CustomException;
 import letsit_backend.exception.ErrorCode;
+import letsit_backend.exception.PostErrorCode;
 import letsit_backend.model.*;
 import letsit_backend.repository.*;
 import lombok.RequiredArgsConstructor;
@@ -69,13 +71,13 @@ public class PostService {
 
         // 찾아온 값과 request 값 개수가 동일한지 확인(누락된 값 없는지 확인)
         if (skillStacks.size() != requestDto.getStack().size()) {
-            throw new CustomException(ErrorCode.INVALID_STACK);
+            throw new CustomException(PostErrorCode.INVALID_STACK);
         }
         if (softSkills.size() != requestDto.getSoftSkills().size()) {
-            throw new CustomException(ErrorCode.INVALID_SOFT_SKILL);
+            throw new CustomException(PostErrorCode.INVALID_SOFT_SKILL);
         }
         if (categories.size() != requestDto.getCategories().size()) {
-            throw new CustomException(ErrorCode.INVALID_CATEGORY);
+            throw new CustomException(PostErrorCode.INVALID_CATEGORY);
         }
 
         // 값 동기화(추가)
@@ -96,10 +98,10 @@ public class PostService {
         Area subRegion = findAreaById(requestDto.getSubRegionId());
 
         if (post.isClosed()) {
-            throw new CustomException(ErrorCode.POST_CLOSED);
+            throw new CustomException(PostErrorCode.POST_CLOSED);
         }
         if (!post.getMember().getUserId().equals(member.getUserId())) {
-            throw new CustomException(ErrorCode.UNAUTHORIZED);
+            throw new CustomException(CommonErrorCode.UNAUTHORIZED);
         }
 
         // 게시글 정보 수정
@@ -126,13 +128,13 @@ public class PostService {
 
         // 찾아온 값과 request 값 개수가 동일한지 확인(누락된 값 없는지 확인)
         if (skillStacks.size() != requestDto.getStack().size()) {
-            throw new CustomException(ErrorCode.INVALID_STACK);
+            throw new CustomException(PostErrorCode.INVALID_STACK);
         }
         if (softSkills.size() != requestDto.getSoftSkills().size()) {
-            throw new CustomException(ErrorCode.INVALID_SOFT_SKILL);
+            throw new CustomException(PostErrorCode.INVALID_SOFT_SKILL);
         }
         if (categories.size() != requestDto.getCategories().size()) {
-            throw new CustomException(ErrorCode.INVALID_CATEGORY);
+            throw new CustomException(PostErrorCode.INVALID_CATEGORY);
         }
 
         // 값 동기화(수정)
@@ -148,7 +150,7 @@ public class PostService {
     public void deletePost(Member member, Long postId) {
         Post post = findPostById(postId);
         if (!post.getMember().getUserId().equals(member.getUserId())) {
-            throw new CustomException(ErrorCode.UNAUTHORIZED);
+            throw new CustomException(CommonErrorCode.UNAUTHORIZED);
         }
         postRepository.delete(post);
     }
@@ -156,6 +158,7 @@ public class PostService {
     // 게시글 조회
     @Transactional
     public PostResponseDto getPostById(Long postId) {
+
         Post post = findPostById(postId);
 
         post.increaseViewCount();
@@ -171,11 +174,11 @@ public class PostService {
         Post post = findPostById(postId);
 
         if (!post.getMember().getUserId().equals(member.getUserId())) {
-            throw new CustomException(ErrorCode.NOT_MATCHING_USER);
+            throw new CustomException(PostErrorCode.NOT_MATCHING_USER);
         }
 
         if (post.isClosed()) {
-            throw new CustomException(ErrorCode.POST_ALREADY_CLOSED);
+            throw new CustomException(PostErrorCode.POST_ALREADY_CLOSED);
         }
 
         post.setClosed();
@@ -193,19 +196,19 @@ public class PostService {
     // findByX
     private Area findAreaById(Long areaId) {
         return areaRepository.findById(areaId)
-                .orElseThrow(() -> new CustomException(ErrorCode.AREA_NOT_FOUND));
+                .orElseThrow(() -> new CustomException(PostErrorCode.AREA_NOT_FOUND));
     }
 
     private Post findPostById(Long postId) {
         return postRepository.findById(postId)
-                .orElseThrow(() -> new CustomException(ErrorCode.POSTS_NOT_FOUND));
+                .orElseThrow(() -> new CustomException(PostErrorCode.POSTS_NOT_FOUND));
     }
 
     // TODO 프로필 조회에서 N+1 문제 발생 -> 추후 개선
     private List<CommentResponseDto> findCommentByPost(Post post) {
         return commentRepository.findByPostId(post).stream()
                 .map(comment -> {
-                    Profile profile = profileRepository.findByUserId(comment.getUserId());
+                    Profile profile = profileRepository.findByMember(comment.getUserId());
                     CommentResponseDto dto = new CommentResponseDto(
                             comment,
                             profileRepository);

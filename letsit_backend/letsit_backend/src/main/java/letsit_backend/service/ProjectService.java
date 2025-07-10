@@ -27,6 +27,7 @@ public class ProjectService {
                 .collect(Collectors.toList());
     }
 
+
     // 회원이 신청한 프로젝트 목록 조회
     public List<ProjectDto> getAppliedProjectsByUserId(Member member) {
         List<Apply> applies = applyRepository.findByUserId(member);
@@ -55,7 +56,7 @@ public class ProjectService {
         // 팀 멤버들의 프로필 이미지 URL을 가져오기
         List<String> profileImages = teamMemberRepository.findByTeamId_TeamId(teamPost.getTeamId()).stream()
                 .map(teamMember -> {
-                    Profile profile = profileRepository.findByUserId(teamMember.getUserId());
+                    Profile profile = profileRepository.findByMember(teamMember.getUserId());
                     return profile != null ? profile.getProfileImageUrl() : null;
                 })
                 .collect(Collectors.toList());
