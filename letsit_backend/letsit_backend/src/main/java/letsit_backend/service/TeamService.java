@@ -79,7 +79,7 @@ public class TeamService {
         }
 
         // 팀장 저장
-        Member postUserId = post.getUserId();
+        Member postUserId = post.getMember();
         TeamMember teamLeader = new TeamMember(teamPost, postUserId, TeamMember.Role.Team_Leader);
         teamMemberRepository.save(teamLeader);
 

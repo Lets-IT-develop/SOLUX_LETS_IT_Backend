@@ -7,8 +7,10 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import letsit_backend.model.Member;
+
 import java.util.Optional;
 import java.util.List;
+
 import org.springframework.data.jpa.repository.Query;
 
 
@@ -20,7 +22,9 @@ public interface PostRepository extends JpaRepository<Post, Long>, JpaSpecificat
     // 페이징
     Page<Post> findByTitleContaining(String title, Pageable pageable);
 
-    List<Post> findByUserIdAndDeadlineFalse(Member userId);
+    List<Post> findByMemberAndDeadlineFalse(Member userId);
 
     List<Post> findAllByDeadlineFalseOrderByCreatedAtDesc();
+
+    List<Post> findAllByDeadlineFalse();
 }
