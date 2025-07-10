@@ -23,9 +23,6 @@ public class Member {
     @Column
     private String name;
 
-    @Column
-    private String email;
-
     @Enumerated(EnumType.STRING)
     private Role role;
 

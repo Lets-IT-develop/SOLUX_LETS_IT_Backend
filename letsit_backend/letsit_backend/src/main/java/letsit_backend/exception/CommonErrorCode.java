@@ -19,13 +19,6 @@ public enum CommonErrorCode implements ErrorCode {
     MISSING_PARAMETER(HttpStatus.BAD_REQUEST, "필수 요청값이 누락되었습니다."),
     METHOD_NOT_ALLOWED(HttpStatus.METHOD_NOT_ALLOWED, "허용되지 않은 요청 방식입니다."),
 
-//    TODO JWT 관련: JwtErrorCode로 분리
-//    INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 토큰입니다."),
-//    EXPIRED_ACCESS_TOKEN(HttpStatus.UNAUTHORIZED, "만료된 액세스 토큰입니다."),
-//    EXPIRED_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "만료된 리프레쉬 토큰입니다."),
-//    TOKEN_NOT_FOUND(HttpStatus.UNAUTHORIZED, "요청에 토큰이 존재하지 않습니다"),
-
-
     /**
      * 5XX : Server Error
      */
@@ -38,8 +31,10 @@ public enum CommonErrorCode implements ErrorCode {
     DATABASE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "데이터베이스 처리 중 오류가 발생했습니다."),
     IO_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "입출력 처리 중 오류가 발생했습니다."),
 
-    DEFAULT(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류입니다. 담당자에게 문의해주세요.");
+    DEFAULT(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류입니다. 담당자에게 문의해주세요."),
 
+    USER_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 사용자를 찾을 수 없습니다."),
+    PROFILE_NOT_FOUND(HttpStatus.NOT_FOUND, "프로필 정보를 찾을 수 없습니다.");
 
 //    TODO team 관련: TeamErrorCode로 분리
 //    TEAM_NOT_FOUND(HttpStatus.NOT_FOUND, "팀을 찾을수 없습니다."),
