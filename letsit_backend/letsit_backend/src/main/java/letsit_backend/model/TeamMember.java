@@ -17,7 +17,7 @@ public class TeamMember {
 
     @ManyToOne
     @JoinColumn(name = "TEAM_ID")
-    private TeamPost teamId;
+    private TeamPost teamPost;
 
     @ManyToOne
     @JoinColumn(name = "USER_ID")

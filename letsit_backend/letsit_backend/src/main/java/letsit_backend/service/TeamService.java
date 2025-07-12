@@ -23,13 +23,12 @@ public class TeamService {
     private final PostRepository postRepository;
     private final TeamMemberRepository teamMemberRepository;
     private final TeamPostRepository teamPostRepository;
-    private final MemberRepository memberRepository;
     private final ProfileRepository profileRepository;
     private final ApplyRepository applyRepository;
 
-    // 팀 게시판 & 팀멤버 생성(질문하기)
+    // 팀 게시판 & 팀멤버 생성 (게시글 주인 only)
     @Transactional
-    public Long createTeamPostAndTeamMember(Long postId, Member member, TeamCreateRequestDto request) {
+    public Long createTeam(Long postId, Member member, TeamCreateRequestDto request) {
         Post post = getPost(postId);
         validateIsPostOwner(member, post);
 
@@ -38,11 +37,11 @@ public class TeamService {
                 .post(post)
                 .prjTitle(request.getTeamName())
                 .build();
-        teamPostRepository.save(teamPost);
+        TeamPost savedTeamPost = teamPostRepository.save(teamPost);
 
         // 팀리더 생성
         TeamMember leader = TeamMember.builder()
-                .teamId(teamPost)
+                .teamPost(teamPost)
                 .member(member)
                 .teamMemberRole(TeamMember.Role.Team_Leader)
                 .build();
@@ -52,55 +51,14 @@ public class TeamService {
         List<Apply> applyList = applyRepository.findAllByPostIdAndConfirm(post, true);
         applyList.forEach(apply -> {
             TeamMember teamMember = TeamMember.builder()
-                    .teamId(teamPost)
+                    .teamPost(teamPost)
                     .member(apply.getMember())
                     .teamMemberRole(TeamMember.Role.Team_Member)
                     .build();
             teamMemberRepository.save(teamMember);
         });
 
-        return teamPost.getTeamId();
-    }
-
-    // 팀 게시판 생성
-    // TODO post 생성 함수에 추가
-    public void createTeamPost(Long postId, Member member, TeamCreateRequestDto request) {
-        Post post = getPost(postId);
-        validateIsPostOwner(member, post);
-
-        // teamPost 객체 생성
-        TeamPost teamPost = TeamPost.builder()
-                .post(post)
-                .prjTitle(request.getTeamName())
-                .build();
-        teamPostRepository.save(teamPost);
-
-        // 리더 생성
-        TeamMember teamMember = TeamMember.builder()
-                .teamId(teamPost)
-                .member(member)
-                .teamMemberRole(TeamMember.Role.Team_Leader)
-                .build();
-        teamMemberRepository.save(teamMember);
-    }
-
-    // 팀 멤버 생성
-    // TODO apply 승인 함수에 추가
-    @Transactional
-    public void createTeamMember(Long teamId, Long targetMemberId, Member member) {
-        TeamPost teamPost = getTeamPost(teamId);
-        TeamMember currentLeader = getTeamMemberByMemberAndTeamPost(member,teamPost);
-        validateIsLeader(currentLeader);
-
-        Member targetMember = getMember(targetMemberId);
-
-        TeamMember teamMember = TeamMember.builder()
-                .teamId(teamPost)
-                .member(targetMember)
-                .teamMemberRole(TeamMember.Role.Team_Member)
-                .build();
-
-        teamMemberRepository.save(teamMember);
+        return savedTeamPost.getTeamId();
     }
 
     // 팀정보 조회
@@ -150,7 +108,7 @@ public class TeamService {
         }
     }
 
-    // 팀원 강퇴(팀장 only)
+    // 팀원 강퇴 (팀장 only)
     @Transactional
     public void deleteTeamMember(Long teamId, Long teamMemberId, Member member) {
         TeamPost teamPost = getTeamPost(teamId);
@@ -162,18 +120,9 @@ public class TeamService {
         teamMemberRepository.delete(targetTeamMember);
     }
 
-    /**
-     * private helper methods
-     */
-
     private Post getPost(Long postId) {
         return postRepository.findById(postId)
                 .orElseThrow(()-> new CustomException(PostErrorCode.POSTS_NOT_FOUND));
-    }
-
-    private Member getMember(Long memberId) {
-        return memberRepository.findById(memberId)
-                .orElseThrow(()-> new CustomException(MemberErrorCode.MEMBER_NOT_FOUND));
     }
 
     private TeamPost getTeamPost(Long teamPostId) {
@@ -193,7 +142,7 @@ public class TeamService {
     }
 
     private void disbandTeam(TeamMember currentLeader) {
-        TeamPost teamPost = currentLeader.getTeamId();
+        TeamPost teamPost = currentLeader.getTeamPost();
         teamMemberRepository.delete(currentLeader);
         teamPostRepository.delete(teamPost);
     }
@@ -220,10 +169,6 @@ public class TeamService {
                 .orElseThrow(()-> new CustomException(TeamErrorCode.TEAM_LEADER_SELECTION_FAILED));
     }
 
-    /**
-     * Validator
-     */
-
     private void validateTeamMembershipPermission(Member member, TeamPost teamPost) {
         if (!teamMemberRepository.existsByMemberAndTeamPost(member,teamPost)) {
             throw new CustomException(TeamErrorCode.TEAM_PERMISSION_DENIED);
@@ -241,10 +186,4 @@ public class TeamService {
             throw new CustomException(PostErrorCode.NOT_MATCHING_USER);
         }
     }
-
-
-
-
-
-
 }

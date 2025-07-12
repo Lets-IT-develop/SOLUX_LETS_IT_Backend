@@ -2,6 +2,8 @@ package letsit_backend.team;
 
 import letsit_backend.dto.team.TeamCreateRequestDto;
 import letsit_backend.dto.team.TeamInfoResponseDto;
+import letsit_backend.exception.CustomException;
+import letsit_backend.exception.PostErrorCode;
 import letsit_backend.model.*;
 import letsit_backend.repository.*;
 import letsit_backend.service.TeamService;
@@ -22,6 +24,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -33,6 +36,7 @@ public class TeamServiceTest {
     @Mock private PostRepository postRepository;
     @Mock private TeamPostRepository teamPostRepository;
     @Mock private TeamMemberRepository teamMemberRepository;
+    @Mock private ApplyRepository applyRepository;
     @Mock private ProfileRepository profileRepository;
     @Mock private MemberRepository memberRepository;
 
@@ -68,7 +72,7 @@ public class TeamServiceTest {
 
         teamMember = TeamMember.builder()
                 .teamMemberId(1L)
-                .teamId(teamPost)
+                .teamPost(teamPost)
                 .member(member)
                 .teamMemberRole(TeamMember.Role.Team_Leader)
                 .joinedAt(LocalDateTime.now())
@@ -87,22 +91,44 @@ public class TeamServiceTest {
         @Test
         @DisplayName("성공: 게시글 작성자가 팀 게시판 생성")
         void createTeamPost_Success() {
-            // given
             Long postId = 1L;
-            TeamCreateRequestDto requestDto = new TeamCreateRequestDto("test TeamPost");
+            Member member1 = Member.builder().userId(2L).build();
+            Member member2 = Member.builder().userId(3L).build();
+
+            Apply apply1 = Apply.builder().member(member1).postId(post).build();
+            Apply apply2 = Apply.builder().member(member2).postId(post).build();
+
+            TeamCreateRequestDto requestDto = new TeamCreateRequestDto("테스트팀");
 
             given(postRepository.findById(postId)).willReturn(Optional.of(post));
+            given(applyRepository.findAllByPostIdAndConfirm(post, true)).willReturn(List.of(apply1, apply2));
             given(teamPostRepository.save(any(TeamPost.class))).willReturn(teamPost);
-            given(teamMemberRepository.save(any(TeamMember.class))).willReturn(teamMember);
+
+            given(teamMemberRepository.save(any(TeamMember.class))).willAnswer(invocation -> invocation.getArgument(0));
 
             // when
-            assertThatCode(()-> teamService.createTeamPost(postId, member, requestDto))
-                    .doesNotThrowAnyException();
+            Long result = teamService.createTeam(postId, member, requestDto);
 
             // then
+            assertThat(result).isEqualTo(1L);
+
             verify(postRepository).findById(postId);
             verify(teamPostRepository).save(any(TeamPost.class));
-            verify(teamMemberRepository).save(any(TeamMember.class));
+            verify(teamMemberRepository, times(3)).save(any(TeamMember.class));
+
+            verify(teamMemberRepository).save(argThat(teamMember ->
+                    teamMember.getMember().equals(member) &&
+                            teamMember.getTeamMemberRole().equals(TeamMember.Role.Team_Leader)
+            ));
+            verify(teamMemberRepository).save(argThat(teamMember ->
+                    teamMember.getMember().equals(member1) &&
+                            teamMember.getTeamMemberRole().equals(TeamMember.Role.Team_Member)
+            ));
+
+            verify(teamMemberRepository).save(argThat(teamMember ->
+                    teamMember.getMember().equals(member2) &&
+                            teamMember.getTeamMemberRole().equals(TeamMember.Role.Team_Member)
+            ));
         }
 
         @Test
@@ -115,9 +141,9 @@ public class TeamServiceTest {
             given(postRepository.findById(nonExistentPostId)).willReturn(Optional.empty());
 
             // when & then
-            assertThatThrownBy(()-> teamService.createTeamPost(nonExistentPostId, member, requestDto))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("post not found");
+            assertThatThrownBy(()-> teamService.createTeam(nonExistentPostId, member, requestDto))
+                    .isInstanceOf(CustomException.class)
+                    .hasMessage("게시글이 존재하지 않습니다.");
         }
 
         @Test
@@ -134,68 +160,9 @@ public class TeamServiceTest {
             given(postRepository.findById(postId)).willReturn(Optional.of(post));
 
             // when & then
-            assertThatThrownBy(()-> teamService.createTeamPost(postId, otherMember, requestDto))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("post owner permission denied");
-        }
-    }
-
-    @Nested
-    @DisplayName("팀 멤버 생성 테스트")
-    class CreateTeamMemberTest {
-
-        @Test
-        @DisplayName("성공: 팀장이 새로운 멤버 승인")
-        void createTeamMember_Success() {
-            // given
-            Long teamId = 1L;
-            Long memberId = 2L;
-
-            Member targetMember = Member.builder()
-                    .userId(2L)
-                    .name("newMember")
-                    .build();
-
-            given(teamPostRepository.findById(teamId)).willReturn(Optional.of(teamPost));
-            given(teamMemberRepository.findByMemberAndTeamPost(member, teamPost)).willReturn(Optional.of(teamMember));
-            given(memberRepository.findById(memberId)).willReturn(Optional.of(targetMember));
-
-            // when
-            assertThatCode(()-> teamService.createTeamMember(teamId, memberId, member))
-                    .doesNotThrowAnyException();
-
-            // then
-            verify(teamMemberRepository).save(any(TeamMember.class));
-        }
-
-        // 팀 멤버 생성 - 존재하지 않는 유저
-
-        @Test
-        @DisplayName("실패: 팀장이 아닌 사용자가 멤버 승인 시도")
-        void createTeamMember_NotLeader() {
-            // given
-            Long teamId = 1L;
-            Long memberIdToAdd = 999L;
-
-            Member nonLeaderMember = Member.builder()
-                    .userId(2L)
-                    .name("NonLeader")
-                    .build();
-
-            TeamMember regularTeamMember = TeamMember.builder()
-                    .teamMemberId(2L)
-                    .teamId(teamPost)
-                    .member(nonLeaderMember)
-                    .teamMemberRole(TeamMember.Role.Team_Member)
-                    .build();
-
-            given(teamPostRepository.findById(teamId)).willReturn(Optional.of(teamPost));
-            given(teamMemberRepository.findByMemberAndTeamPost(nonLeaderMember, teamPost)).willReturn(Optional.of(regularTeamMember));
-
-            // when & then
-            assertThatThrownBy(()-> teamService.createTeamMember(teamId, memberIdToAdd, nonLeaderMember))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("TeamPost Permission Denied");
+            assertThatThrownBy(()-> teamService.createTeam(postId, otherMember, requestDto))
+                    .isInstanceOf(CustomException.class)
+                    .hasMessage("게시글 작성자와 일치하지 않습니다.");
         }
     }
 
@@ -221,6 +188,7 @@ public class TeamServiceTest {
             // then
             assertThat(result).isNotNull();
             assertThat(result.getTeamName()).isEqualTo("테스트 팀");
+            assertThat(result.isCompleted()).isFalse();
             assertThat(result.getTeamMemberInfo()).hasSize(1);
             assertThat(result.getTeamMemberInfo().getFirst().getUserName()).isEqualTo("testUser");
             assertThat(result.getTeamMemberInfo().getFirst().getProfileImageUrl()).isEqualTo("https://profileUrl.com");
@@ -242,8 +210,8 @@ public class TeamServiceTest {
 
             // when & then
             assertThatThrownBy(()-> teamService.getTeamInfo(teamId, outsider))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("teamPost Permission Denied");
+                    .isInstanceOf(CustomException.class)
+                    .hasMessage("팀 접근 권한이 없습니다.");
         }
     }
 
@@ -280,7 +248,7 @@ public class TeamServiceTest {
 
             TeamMember regularTeamMember = TeamMember.builder()
                     .teamMemberId(2L)
-                    .teamId(teamPost)
+                    .teamPost(teamPost)
                     .member(nonLeaderMember)
                     .teamMemberRole(TeamMember.Role.Team_Member)
                     .build();
@@ -290,8 +258,8 @@ public class TeamServiceTest {
 
             // when & then
             assertThatThrownBy(()-> teamService.completeTeamPost(teamId, nonLeaderMember))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("TeamPost Permission Denied");
+                    .isInstanceOf(CustomException.class)
+                    .hasMessage("팀장 권한이 필요합니다.");
         }
     }
 
@@ -331,7 +299,7 @@ public class TeamServiceTest {
 
             TeamMember teamMember2 = TeamMember.builder()
                     .teamMemberId(2L)
-                    .teamId(teamPost)
+                    .teamPost(teamPost)
                     .member(member2)
                     .teamMemberRole(TeamMember.Role.Team_Member)
                     .joinedAt(LocalDateTime.now().minusDays(1))
@@ -366,7 +334,7 @@ public class TeamServiceTest {
 
             TeamMember teamMember2 = TeamMember.builder()
                     .teamMemberId(2L)
-                    .teamId(teamPost)
+                    .teamPost(teamPost)
                     .member(member2)
                     .teamMemberRole(TeamMember.Role.Team_Member)
                     .joinedAt(LocalDateTime.now().minusDays(1))
@@ -377,8 +345,8 @@ public class TeamServiceTest {
 
             // when
             assertThatThrownBy(()-> teamService.deleteTeamLeader(teamId, member2))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("TeamPost Permission Denied");
+                    .isInstanceOf(CustomException.class)
+                    .hasMessage("팀장 권한이 필요합니다.");
         }
     }
 
@@ -399,7 +367,7 @@ public class TeamServiceTest {
 
             TeamMember targetTeamMembmer = TeamMember.builder()
                     .teamMemberId(2L)
-                    .teamId(teamPost)
+                    .teamPost(teamPost)
                     .member(targetMember)
                     .teamMemberRole(TeamMember.Role.Team_Member)
                     .build();
@@ -430,7 +398,7 @@ public class TeamServiceTest {
 
             TeamMember notLeaderMember = TeamMember.builder()
                     .teamMemberId(2L)
-                    .teamId(teamPost)
+                    .teamPost(teamPost)
                     .member(member2)
                     .teamMemberRole(TeamMember.Role.Team_Member)
                     .build();
@@ -440,8 +408,8 @@ public class TeamServiceTest {
 
             // when & then
             assertThatThrownBy(()-> teamService.deleteTeamMember(teamId, teamMemberId, member2))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("TeamPost Permission Denied");
+                    .isInstanceOf(CustomException.class)
+                    .hasMessage("팀장 권한이 필요합니다.");
         }
 
         @Test
@@ -456,8 +424,8 @@ public class TeamServiceTest {
 
             // when & then
             assertThatThrownBy(()-> teamService.deleteTeamMember(teamId, teamMemberId, member))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("teamMember not found");
+                    .isInstanceOf(CustomException.class)
+                    .hasMessage("팀멤버를 찾을수없습니다.");
         }
 
     }

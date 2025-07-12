@@ -14,13 +14,13 @@ public class TeamController {
 
     private final TeamService teamService;
 
-    // 팀생성
+    // 팀생성 (게시글 주인 only)
     @PostMapping("/posts/{postId}/teams")
     public Response<Long> createTeam(@PathVariable("postId") Long postId,
                                      @RequestBody TeamCreateRequestDto requestDto,
                                      @CurrentUser Member member) {
 
-        Long teamId = teamService.createTeamPostAndTeamMember(postId, member, requestDto);
+        Long teamId = teamService.createTeam(postId, member, requestDto);
         return Response.success("팀 생성", teamId);
     }
 
@@ -42,7 +42,7 @@ public class TeamController {
         return Response.success("프로젝트 종료", null);
     }
 
-    // 팀 나가기(팀장 only)
+    // 팀 나가기 (팀장 only)
     @DeleteMapping("/teams/{teamId}/team-members/me")
     public Response<?> deleteTeamLeader(@PathVariable("teamId") Long teamId,
                                         @CurrentUser Member member) {
@@ -51,7 +51,7 @@ public class TeamController {
         return Response.success("팀 나가기 완료", null);
     }
 
-    // 팀원 강퇴(팀장 only)
+    // 팀원 강퇴 (팀장 only)
     @DeleteMapping("/teams/{teamId}/team-members/{teamMemberId}")
     public Response<?> deleteTeamMember(@PathVariable("teamId") Long teamId,
                                         @PathVariable("teamMemberId") Long teamMemberId,

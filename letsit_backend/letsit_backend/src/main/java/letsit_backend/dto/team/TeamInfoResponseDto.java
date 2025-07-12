@@ -36,15 +36,15 @@ public class TeamInfoResponseDto {
         private Long userId;
         private TeamMember.Role role;
         private String userName;
-        private String position;
+        private List<String> position;
         private String profileImageUrl;
 
         public static TeamMemberInfoDto of(TeamMember teamMember, Profile profile) {
             return TeamMemberInfoDto.builder()
                     .userId(teamMember.getMember().getUserId())
                     .role(teamMember.getTeamMemberRole())
-                    .userName(profile.getNickname())
-                    .position("NONE")
+                    .userName(teamMember.getMember().getName())
+                    .position(profile.getInterests())
                     .profileImageUrl(profile.getProfileImageUrl())
                     .build();
         }
