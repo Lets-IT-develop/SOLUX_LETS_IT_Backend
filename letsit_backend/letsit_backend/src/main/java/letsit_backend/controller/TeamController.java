@@ -14,19 +14,23 @@ public class TeamController {
 
     private final TeamService teamService;
 
+    // 팀생성
+    @PostMapping("/posts/{postId}/teams")
+    public Response<Long> createTeam(@PathVariable("postId") Long postId,
+                                     @RequestBody TeamCreateRequestDto requestDto,
+                                     @CurrentUser Member member) {
+
+        Long teamId = teamService.createTeamPostAndTeamMember(postId, member, requestDto);
+        return Response.success("팀 생성", teamId);
+    }
+
     // 팀 정보 조회
     @GetMapping("/teams/{teamId}")
     public Response<TeamInfoResponseDto> getTeamInfo(@PathVariable("teamId") Long teamId,
                                                      @CurrentUser Member member) {
 
-        return Response.success("팀 정보 조회", teamService.getTeamInfo(teamId, member));
-    }
-
-    // 프로젝트 종료 여부 확인 (완료)
-    @GetMapping("/teams/{teamId}/status")
-    public Response<?> isTeamPostComplete(@PathVariable("teamId") Long teamId,
-                                          @CurrentUser Member member) {
-        return Response.success("프로젝트 마감여부 조회", teamService.isCompleted(teamId,member));
+        TeamInfoResponseDto dto = teamService.getTeamInfo(teamId, member);
+        return Response.success("팀 정보 조회", dto);
     }
 
     // 프로젝트 종료 (팀장 Only)
@@ -42,16 +46,17 @@ public class TeamController {
     @DeleteMapping("/teams/{teamId}/team-members/me")
     public Response<?> deleteTeamLeader(@PathVariable("teamId") Long teamId,
                                         @CurrentUser Member member) {
+
         teamService.deleteTeamLeader(teamId,member);
         return Response.success("팀 나가기 완료", null);
     }
 
     // 팀원 강퇴(팀장 only)
-    @DeleteMapping("/teams/{teamPostId}/team-members/{teamMemberId}")
-    public Response<?> deleteTeamMember(@PathVariable("teamPostId") Long teamPostId,
+    @DeleteMapping("/teams/{teamId}/team-members/{teamMemberId}")
+    public Response<?> deleteTeamMember(@PathVariable("teamId") Long teamId,
                                         @PathVariable("teamMemberId") Long teamMemberId,
                                         @CurrentUser Member member) {
-        teamService.deleteTeamMember(teamPostId, teamMemberId, member);
+        teamService.deleteTeamMember(teamId, teamMemberId, member);
         return Response.success("팀원 강퇴 완료", null);
     }
 

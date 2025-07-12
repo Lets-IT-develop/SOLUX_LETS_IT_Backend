@@ -21,7 +21,7 @@ public class TeamMember {
 
     @ManyToOne
     @JoinColumn(name = "USER_ID")
-    private Member userId;
+    private Member member;
 
     @Column(name = "joined_at", nullable = false)
     private LocalDateTime joinedAt;

@@ -1,6 +1,8 @@
 package letsit_backend.dto.team;
 
+import letsit_backend.model.Profile;
 import letsit_backend.model.TeamMember;
+import letsit_backend.model.TeamPost;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -15,7 +17,16 @@ import java.util.Map;
 @Builder
 public class TeamInfoResponseDto {
     private String teamName;
+    private boolean isCompleted;
     private List<TeamMemberInfoDto> teamMemberInfo;
+
+    public static TeamInfoResponseDto of (TeamPost teamPost, List<TeamMemberInfoDto> teamMemberInfoDTOs) {
+        return TeamInfoResponseDto.builder()
+                .teamName(teamPost.getPrjTitle())
+                .isCompleted(teamPost.getIsComplete())
+                .teamMemberInfo(teamMemberInfoDTOs)
+                .build();
+    }
 
     @Builder
     @AllArgsConstructor
@@ -26,6 +37,16 @@ public class TeamInfoResponseDto {
         private TeamMember.Role role;
         private String userName;
         private String position;
-        private String ProfileImageUrl;
+        private String profileImageUrl;
+
+        public static TeamMemberInfoDto of(TeamMember teamMember, Profile profile) {
+            return TeamMemberInfoDto.builder()
+                    .userId(teamMember.getMember().getUserId())
+                    .role(teamMember.getTeamMemberRole())
+                    .userName(profile.getNickname())
+                    .position("NONE")
+                    .profileImageUrl(profile.getProfileImageUrl())
+                    .build();
+        }
     }
 }

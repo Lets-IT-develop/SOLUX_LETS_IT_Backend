@@ -55,7 +55,7 @@ public class TeamServiceTest {
 
         post = Post.builder()
                 .postId(1L)
-                .userId(member)
+                .member(member)
                 .title("테스트 게시물 제목")
                 .content("테스트 게시물 입니다.")
                 .build();
@@ -69,7 +69,7 @@ public class TeamServiceTest {
         teamMember = TeamMember.builder()
                 .teamMemberId(1L)
                 .teamId(teamPost)
-                .userId(member)
+                .member(member)
                 .teamMemberRole(TeamMember.Role.Team_Leader)
                 .joinedAt(LocalDateTime.now())
                 .build();
@@ -185,7 +185,7 @@ public class TeamServiceTest {
             TeamMember regularTeamMember = TeamMember.builder()
                     .teamMemberId(2L)
                     .teamId(teamPost)
-                    .userId(nonLeaderMember)
+                    .member(nonLeaderMember)
                     .teamMemberRole(TeamMember.Role.Team_Member)
                     .build();
 
@@ -248,47 +248,6 @@ public class TeamServiceTest {
     }
 
     @Nested
-    @DisplayName("프로젝트 완료 상태 조회 테스트")
-    class IsCompletedTest {
-
-        @Test
-        @DisplayName("성공: 완료되지 않은 프로젝트 상태 조회")
-        void isCompleted_Success() {
-            // given
-            Long teamId = 1L;
-
-            given(teamPostRepository.findById(teamId)).willReturn(Optional.of(teamPost));
-            given(teamMemberRepository.existsByMemberAndTeamPost(member, teamPost)).willReturn(true);
-
-            // when
-            boolean result = teamService.isCompleted(teamId, member);
-
-            // then
-            assertThat(result).isFalse();
-        }
-
-        @Test
-        @DisplayName("실패: 팀멤버가 아닌 사용자가 프로젝트 상태 조회 시도")
-        void isCompleted_NotTeamMember() {
-            // given
-            Long teamId = 1L;
-
-            Member outsider = Member.builder()
-                    .userId(2L)
-                    .name("outsider")
-                    .build();
-
-            given(teamPostRepository.findById(teamId)).willReturn(Optional.of(teamPost));
-            given(teamMemberRepository.existsByMemberAndTeamPost(outsider, teamPost)).willReturn(false);
-
-            // when & then
-            assertThatThrownBy(()-> teamService.isCompleted(teamId, outsider))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("teamPost Permission Denied");
-        }
-    }
-
-    @Nested
     @DisplayName("프로젝트 완료 처리 테스트")
     class CompleteTeamPostTest {
         @Test
@@ -322,7 +281,7 @@ public class TeamServiceTest {
             TeamMember regularTeamMember = TeamMember.builder()
                     .teamMemberId(2L)
                     .teamId(teamPost)
-                    .userId(nonLeaderMember)
+                    .member(nonLeaderMember)
                     .teamMemberRole(TeamMember.Role.Team_Member)
                     .build();
 
@@ -349,7 +308,7 @@ public class TeamServiceTest {
 
             given(teamPostRepository.findById(teamId)).willReturn(Optional.of(teamPost));
             given(teamMemberRepository.findByMemberAndTeamPost(member, teamPost)).willReturn(Optional.of(teamMember));
-            given(teamMemberRepository.findAllByTeamPostWithLock(teamPost)).willReturn(singleMemberList);
+            given(teamMemberRepository.findAllByTeamPost(teamPost)).willReturn(singleMemberList);
 
             // when
             assertThatCode(()-> teamService.deleteTeamLeader(teamId, member))
@@ -373,7 +332,7 @@ public class TeamServiceTest {
             TeamMember teamMember2 = TeamMember.builder()
                     .teamMemberId(2L)
                     .teamId(teamPost)
-                    .userId(member2)
+                    .member(member2)
                     .teamMemberRole(TeamMember.Role.Team_Member)
                     .joinedAt(LocalDateTime.now().minusDays(1))
                     .build();
@@ -382,7 +341,7 @@ public class TeamServiceTest {
 
             given(teamPostRepository.findById(teamId)).willReturn(Optional.of(teamPost));
             given(teamMemberRepository.findByMemberAndTeamPost(member, teamPost)).willReturn(Optional.of(teamMember));
-            given(teamMemberRepository.findAllByTeamPostWithLock(teamPost)).willReturn(multipleMemberList);
+            given(teamMemberRepository.findAllByTeamPost(teamPost)).willReturn(multipleMemberList);
 
             // when
             assertThatCode(()-> teamService.deleteTeamLeader(teamId, member))
@@ -408,7 +367,7 @@ public class TeamServiceTest {
             TeamMember teamMember2 = TeamMember.builder()
                     .teamMemberId(2L)
                     .teamId(teamPost)
-                    .userId(member2)
+                    .member(member2)
                     .teamMemberRole(TeamMember.Role.Team_Member)
                     .joinedAt(LocalDateTime.now().minusDays(1))
                     .build();
@@ -441,7 +400,7 @@ public class TeamServiceTest {
             TeamMember targetTeamMembmer = TeamMember.builder()
                     .teamMemberId(2L)
                     .teamId(teamPost)
-                    .userId(targetMember)
+                    .member(targetMember)
                     .teamMemberRole(TeamMember.Role.Team_Member)
                     .build();
 
@@ -472,7 +431,7 @@ public class TeamServiceTest {
             TeamMember notLeaderMember = TeamMember.builder()
                     .teamMemberId(2L)
                     .teamId(teamPost)
-                    .userId(member2)
+                    .member(member2)
                     .teamMemberRole(TeamMember.Role.Team_Member)
                     .build();
 

@@ -40,16 +40,6 @@ public enum CommonErrorCode implements ErrorCode {
 
     DEFAULT(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류입니다. 담당자에게 문의해주세요.");
 
-
-//    TODO team 관련: TeamErrorCode로 분리
-//    TEAM_NOT_FOUND(HttpStatus.NOT_FOUND, "팀을 찾을수 없습니다."),
-//    TEAM_LEADER_NOT_FOUND(HttpStatus.NOT_FOUND, "팀리더를 찾을수 없습니다."),
-//    TEAM_MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "팀멤버를 찾을수 없습니다."),
-//    TEAM_EVALUATOR_NOT_FOUND(HttpStatus.NOT_FOUND, "평가자를 찾을수 없습니다."),
-//    TEAM_EVALUATEE_NOT_FOUND(HttpStatus.NOT_FOUND, "평가받는자를 찾을수 없습니다."),
-//    EVALUATION_DUPLICATED(HttpStatus.CONFLICT, "이미 평가했습니다."),
-//    CALENDAR_NOT_FOUND(HttpStatus.NOT_FOUND, "캘린더 일정을 찾을수없습니다.");
-
     private final HttpStatus status;
     private final String message;
 }

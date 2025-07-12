@@ -43,7 +43,7 @@ public class Profile {
     private Map<String, String> sns;
 
     public Profile(Member member, String profileImageUrl, String nickname, String ageGroup, String ageDetail, List<String> Interests) {
-        this.userId = member;
+        this.member = member;
         this.profileImageUrl = profileImageUrl;
         this.nickname = nickname;
         this.ageGroup = ageGroup;
