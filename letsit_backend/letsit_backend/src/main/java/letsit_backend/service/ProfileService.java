@@ -65,7 +65,7 @@ public class ProfileService {
 
         Profile updatedProfile = Profile.builder()
                 .profileId(profile.getProfileId())
-                .userId(member)
+                .member(member)
                 .nickname(profileUpdateRequestDto.getNickname())
                 .profileImageUrl(profileUpdateRequestDto.getProfileImageUrl())
                 .interests(profileUpdateRequestDto.getInterests())

@@ -56,7 +56,7 @@ public class ProjectService {
         // 팀 멤버들의 프로필 이미지 URL을 가져오기
         List<String> profileImages = teamMemberRepository.findByTeamId_TeamId(teamPost.getTeamId()).stream()
                 .map(teamMember -> {
-                    Profile profile = profileRepository.findByMember(teamMember.getUserId());
+                    Profile profile = profileRepository.findByMember(teamMember.getMember());
                     return profile != null ? profile.getProfileImageUrl() : null;
                 })
                 .collect(Collectors.toList());
@@ -92,7 +92,7 @@ public class ProjectService {
     private List<OngoingProjectDto> getProjectsByCompletionStatus(Member member, boolean isComplete) {
         // 팀 멤버를 통해 팀 게시글을 조회하고, 완료 여부로 필터링
         return teamMemberRepository.findAllByUserId(member).stream()
-                .map(TeamMember::getTeamId)
+                .map(TeamMember::getTeamPost)
                 .filter(team -> team.getIsComplete() == isComplete) // 팀의 완료 여부로 필터링
                 .distinct()
                 .map(this::convertToOngoingProjectDto)
