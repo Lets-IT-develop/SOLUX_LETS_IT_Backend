@@ -9,7 +9,6 @@ import java.util.List;
 
 @Repository
 public interface ProfileRepository extends JpaRepository<Profile, Long> {
-    Profile findByMember(Member member);
-
-    List<Profile> findByMemberIn(List<Member> members);
+    Profile findByUserId(Member userId);
+    Optional<Profile> findByMember(Member member);
 }
