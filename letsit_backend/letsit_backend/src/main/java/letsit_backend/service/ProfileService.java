@@ -1,6 +1,8 @@
 package letsit_backend.service;
 
 import letsit_backend.dto.profile.*;
+import letsit_backend.exception.CommonErrorCode;
+import letsit_backend.exception.CustomException;
 import letsit_backend.model.Member;
 import letsit_backend.model.Profile;
 import letsit_backend.repository.MemberRepository;
@@ -17,12 +19,15 @@ public class ProfileService {
 
     private Member findMemberById(Long memberId) {
         return memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
+                .orElseThrow(CommonErrorCode.USER_NOT_FOUND::getDefaultException);
     }
 
     private Profile findProfileByMember(Member member) {
-        return profileRepository.findByMember(member)
-                .orElseThrow(() -> new IllegalArgumentException("해당 사용자의 프로필이 존재하지 않습니다."));
+        Profile profile = profileRepository.findByMember(member);
+        if (profile == null) {
+            throw new CustomException(CommonErrorCode.PROFILE_NOT_FOUND);
+        }
+        return profile;
     }
 
     // 프로필 정보 조회

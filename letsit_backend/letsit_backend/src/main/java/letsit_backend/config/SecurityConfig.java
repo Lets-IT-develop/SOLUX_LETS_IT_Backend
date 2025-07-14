@@ -1,72 +1,89 @@
 package letsit_backend.config;
 
 //import org.apache.catalina.filters.CorsFilter;
-import letsit_backend.jwt.JwtFilter;
+
+import jakarta.servlet.http.HttpServletRequest;
+import letsit_backend.jwt.JWTFilter;
+import letsit_backend.jwt.JWTUtil;
+import letsit_backend.oauth2.CustomSuccessHandler;
+import letsit_backend.service.CustomOAuth2UserService;
+import letsit_backend.service.RedisService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
-import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
-//import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
-//import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.CorsFilter;
 
+import java.util.Collections;
 import java.util.List;
 
 @Slf4j
 @Configuration
+@EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
 
-    @Autowired
-    private JwtFilter jwtFilter;
+    private final CustomOAuth2UserService customOAuth2UserService;
+    private final CustomSuccessHandler customSuccessHandler;
+    private final JWTUtil jwtUtil;
+    private final RedisService redisService;
 
-    //private static final Logger log = LoggerFactory.getLogger(SecurityConfig.class);
-
-    public SecurityConfig(JwtFilter jwtFilter) {
-        this.jwtFilter = jwtFilter;
-    }
-
+    // TODO JWTFilter에서 던지는 예외 처리
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, CustomSuccessHandler customSuccessHandler, RedisService redisService) throws Exception {
         http
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .csrf(csrf -> csrf.disable())
-                .authorizeHttpRequests(authorizeRequests ->
-                        authorizeRequests
+                .cors(corsCustomizer -> corsCustomizer.configurationSource(new CorsConfigurationSource() {
 
-                                .requestMatchers("/", "/home","/apply/**", "/login/**", "/vite.svg", "/posts/**", "/favicon.ico", "/error", "/login/oauth2/callback/kakao", "/profile/**", "index.html").permitAll() // 정적 파일 및 특정 경로 허용
-                                .anyRequest().authenticated()
-                )
+                    @Override
+                    public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
 
-                .formLogin(formLogin ->
-                        formLogin
-                                .loginPage("/login")
-                                //.defaultSuccessUrl("/", true)
-                                .permitAll()
-                )
+                        CorsConfiguration configuration = new CorsConfiguration();
 
-                /*
-                .logout(logout ->
-                        logout
-                                .logoutSuccessUrl("/")
-                                .permitAll()
-                )
+                        configuration.setAllowedOrigins(Collections.singletonList("http://localhost:3000"));
+                        configuration.setAllowedMethods(Collections.singletonList("*"));
+                        configuration.setAllowCredentials(true);
+                        configuration.setAllowedHeaders(Collections.singletonList("*"));
+                        configuration.setMaxAge(3600L);
 
-                 */
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션 정책을 STATELESS로 설정
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class); // JwtFilter를 UsernamePasswordAuthenticationFilter 앞에 추가
-                //.formLogin(formLogin -> formLogin.disable()); // 기본 로그인 폼 비활성화
-        http.logout(logout -> logout.disable());
+                        configuration.setExposedHeaders(Collections.singletonList("Set-Cookie"));
+                        configuration.setExposedHeaders(Collections.singletonList("Authorization"));
+
+                        return configuration;
+                    }
+                }));
+
+        http
+                .csrf((auth) -> auth.disable());
+        http
+                .formLogin((auth) -> auth.disable());
+        http
+                .httpBasic((auth) -> auth.disable());
+        http
+                .addFilterBefore(new JWTFilter(jwtUtil, redisService), UsernamePasswordAuthenticationFilter.class);
+        //oath2 기본 설정 적용
+        http
+                .oauth2Login((oauth2) -> oauth2
+                        .userInfoEndpoint((userInfoEndpointConfig) -> userInfoEndpointConfig
+                                .userService(customOAuth2UserService))
+                        .successHandler(customSuccessHandler)
+                );
+        //경로별 인가 작업
+        http
+                .authorizeHttpRequests((auth) -> auth
+                        .requestMatchers("/").permitAll()
+                        .anyRequest().authenticated());
+        //세션 STATELESS로 설정
+        http
+                .sessionManagement((session) -> session
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+
         return http.build();
     }
 
