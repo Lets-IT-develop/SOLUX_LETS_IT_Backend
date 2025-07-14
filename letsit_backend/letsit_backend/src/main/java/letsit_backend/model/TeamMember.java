@@ -3,11 +3,13 @@ package letsit_backend.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
+@Entity
 @Builder
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Entity
 public class TeamMember {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -15,13 +17,14 @@ public class TeamMember {
 
     @ManyToOne
     @JoinColumn(name = "TEAM_ID")
-    private TeamPost teamId;
+    private TeamPost teamPost;
 
     @ManyToOne
     @JoinColumn(name = "USER_ID")
-    private Member userId;
+    private Member member;
 
-    //private Long profileId;
+    @Column(name = "joined_at", nullable = false)
+    private LocalDateTime joinedAt;
 
     @Enumerated(EnumType.STRING)
     private Role teamMemberRole;
@@ -30,11 +33,11 @@ public class TeamMember {
         Team_Member
     }
 
-
-    public TeamMember(TeamPost teamId, Member userId, Role teamMemberRole) {
-        this.teamId = teamId;
-        this.userId = userId;
-        this.teamMemberRole = teamMemberRole;
+    @PrePersist
+    protected void onCreate() {
+        if (joinedAt == null) {
+            joinedAt = LocalDateTime.now();
+        }
     }
 
     public void setTeamMemberRole(Role teamMemberRole) {
