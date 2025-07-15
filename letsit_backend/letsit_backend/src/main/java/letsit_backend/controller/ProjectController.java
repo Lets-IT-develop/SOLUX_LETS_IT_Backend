@@ -33,12 +33,12 @@ public class ProjectController {
     @GetMapping("/ongoinglist")
     public Response<List<OngoingProjectDto>> getOngoingList(@CurrentUser Member member) {
         List<OngoingProjectDto> ongoingProjects = projectService.getOngoingProjectsByUserId(member);
-        return Response.success("신청한 프로젝트 목록", ongoingProjects);
+        return Response.success("진행 중인 프로젝트 목록", ongoingProjects);
     }
 
     @GetMapping("/completedlist")
     public Response<List<OngoingProjectDto>> getCompletedList(@CurrentUser Member member) {
         List<OngoingProjectDto> ongoingProjects = projectService.getCompletedProjectsByUserId(member);
-        return Response.success("신청한 프로젝트 목록", ongoingProjects);
+        return Response.success("완료된 프로젝트 목록", ongoingProjects);
     }
 }
