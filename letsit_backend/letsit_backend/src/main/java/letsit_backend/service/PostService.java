@@ -5,7 +5,6 @@ import letsit_backend.dto.post.PostRequestDto;
 import letsit_backend.dto.post.PostResponseDto;
 import letsit_backend.exception.CommonErrorCode;
 import letsit_backend.exception.CustomException;
-import letsit_backend.exception.ErrorCode;
 import letsit_backend.exception.PostErrorCode;
 import letsit_backend.model.*;
 import letsit_backend.repository.*;
@@ -15,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,7 +22,6 @@ public class PostService {
 
     private final PostRepository postRepository;
     private final AreaRepository areaRepository;
-    private final MemberRepository memberRepository;
     private final CommentRepository commentRepository;
     private final ProfileRepository profileRepository;
     private final SkillStackRepository skillStackRepository;
