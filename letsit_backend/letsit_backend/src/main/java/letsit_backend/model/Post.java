@@ -40,7 +40,7 @@ public class Post {
     private String content;
 
     @Column(nullable = false)
-    private Long totalPersonnel;
+    private int totalPersonnel;
 
     @ColumnDefault("0")
     private int currentPersonnel;
@@ -197,7 +197,7 @@ public class Post {
     }
 
     public void approval(Apply apply) {
-        if (!isClosed() && totalPersonnel != null && this.totalPersonnel > this.currentPersonnel) {
+        if (!isClosed() && this.totalPersonnel > this.currentPersonnel) {
             apply.approve();
             currentPersonnel++;
         }
@@ -286,7 +286,7 @@ public class Post {
     // 게시글 수정
     public void updatePost(String title,
                            String content,
-                           Long totalPersonnel,
+                           int totalPersonnel,
                            LocalDate recruitDueDate,
                            LocalDate projectStartDate,
                            LocalDate projectEndDate,

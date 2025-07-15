@@ -23,7 +23,7 @@ public class PostRequestDto {
 
     @NotNull(message = "모집 인원은 필수입니다.")
     @Min(value = 1, message = "모집 인원은 1명 이상이어야 합니다.")
-    private Long totalPersonnel;
+    private int totalPersonnel;
 
     @NotNull(message = "마감일은 필수입니다.")
     @Future(message = "마감일은 현재보다 이후여야 합니다.")
