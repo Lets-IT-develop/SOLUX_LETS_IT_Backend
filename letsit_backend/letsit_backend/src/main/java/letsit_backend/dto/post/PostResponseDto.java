@@ -16,7 +16,7 @@ public class PostResponseDto {
     private Long postId;
     private String title;
     private String content;
-    private Post.TotalPersonnel totalPersonnel;
+    private Long totalPersonnel;
     private LocalDate recruitDueDate;
     private String preference;
     private List<String> stack;
@@ -41,7 +41,7 @@ public class PostResponseDto {
                            Long postId,
                            String title,
                            String content,
-                           Post.TotalPersonnel totalPersonnel,
+                           Long totalPersonnel,
                            LocalDate recruitDueDate,
                            String preference,
                            List<String> stack,

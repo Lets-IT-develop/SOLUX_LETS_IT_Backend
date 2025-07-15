@@ -1,9 +1,6 @@
 package letsit_backend.dto.post;
 
-import jakarta.validation.constraints.Future;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import letsit_backend.model.Post;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,7 +22,8 @@ public class PostRequestDto {
     private String content;
 
     @NotNull(message = "모집 인원은 필수입니다.")
-    private Post.TotalPersonnel totalPersonnel;
+    @Min(value = 1, message = "모집 인원은 1명 이상이어야 합니다.")
+    private Long totalPersonnel;
 
     @NotNull(message = "마감일은 필수입니다.")
     @Future(message = "마감일은 현재보다 이후여야 합니다.")

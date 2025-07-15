@@ -39,8 +39,8 @@ public class Post {
     @Column(nullable = false)
     private String content;
 
-    @Enumerated(EnumType.STRING)
-    private TotalPersonnel totalPersonnel;
+    @Column(nullable = false)
+    private Long totalPersonnel;
 
     @ColumnDefault("0")
     private int currentPersonnel;
@@ -112,37 +112,13 @@ public class Post {
     private AgeGroupDetail ageGroupDetail;
 
     // ========= Enum =========
-
-    // 인원
-    @AllArgsConstructor
-    @Getter
-    public enum TotalPersonnel implements KoreanEnum {
-        TWO("2명", 2),
-        THREE("3명", 3),
-        FOUR("4명", 4),
-        FIVE("5명", 5),
-        SIX("6명", 6),
-        SEVEN("7명", 7),
-        EIGHT("8명", 8);
-
-        @JsonValue
-        private final String korean;
-        private final int value;
-
-        @JsonCreator
-        public static TotalPersonnel fromKorean(String korean) {
-            return KoreanEnum.fromKorean(TotalPersonnel.class, korean);
-        }
-    }
-
     // 난이도
     @AllArgsConstructor
     @Getter
     public enum Difficulty implements KoreanEnum {
-        BEGINNER("입문"),
-        BASIC("초급"),
-        MID("중급"),
-        ADVANCED("고급");
+        HARD("상"),
+        NORMAL("중"),
+        EASY("하");
 
         @JsonValue
         private final String korean;
@@ -221,7 +197,7 @@ public class Post {
     }
 
     public void approval(Apply apply) {
-        if (!isClosed() && this.totalPersonnel.getValue() > this.currentPersonnel) {
+        if (!isClosed() && totalPersonnel != null && this.totalPersonnel > this.currentPersonnel) {
             apply.approve();
             currentPersonnel++;
         }
@@ -310,7 +286,7 @@ public class Post {
     // 게시글 수정
     public void updatePost(String title,
                            String content,
-                           TotalPersonnel totalPersonnel,
+                           Long totalPersonnel,
                            LocalDate recruitDueDate,
                            LocalDate projectStartDate,
                            LocalDate projectEndDate,
