@@ -7,6 +7,7 @@ import letsit_backend.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -53,6 +54,7 @@ public class ProjectService {
 
     // 팀 게시글을 OngoingProjectDto로 변환
     private OngoingProjectDto convertToOngoingProjectDto(TeamPost teamPost) {
+        Post post = teamPost.getPost(); // 연관된 Post 가져오기
         // 팀 멤버들의 프로필 이미지 URL을 가져오기
         List<String> profileImages = teamMemberRepository.findByTeamId_TeamId(teamPost.getTeamId()).stream()
                 .map(teamMember -> {
@@ -64,7 +66,16 @@ public class ProjectService {
         return OngoingProjectDto.builder()
                 .teamId(teamPost.getTeamId())
                 .prjTitle(teamPost.getPrjTitle())
-                .profileImages(profileImages)
+                .profileImages(profileImages) // 필요 없으면 null 또는 빈 리스트로 처리
+                .stack(post.getPostSkillStacks().stream()
+                        .map(pss -> pss.getSkillStack().getStackName())
+                        .toList())
+                .categories(post.getPostCategories().stream()
+                        .map(pc -> pc.getCategory().getCategoryName())
+                        .toList())
+                .projectStartDate(post.getProjectStartDate())
+                .projectEndDate(post.getProjectEndDate())
+                .progress(calculateProgress(post.getProjectStartDate(), post.getProjectEndDate())) // 진행률 계산
                 .build();
     }
 
@@ -76,6 +87,7 @@ public class ProjectService {
                 .title(post.getTitle())
                 .regionId(post.getRegion().getName())
                 .subRegionId(post.getSubRegion().getName())
+                .viewCount(post.getViewCount())
                 .onoff(post.getOnOff().getKorean())
                 .stack(post.getPostSkillStacks().stream()
                         .map(pss -> pss.getSkillStack().getStackName())
@@ -101,5 +113,22 @@ public class ProjectService {
                 .map(this::convertToOngoingProjectDto)
                 .collect(Collectors.toList());
     }
+
+    // 진행률 계산
+    private Long calculateProgress(LocalDate start, LocalDate end) {
+        LocalDate today = LocalDate.now();
+
+        if (today.isBefore(start)) return 0L;            // 아직 시작 전
+        if (today.isAfter(end)) return 100L;             // 이미 완료
+
+        long totalDays = start.until(end).getDays();     // 총 기간
+        long elapsedDays = start.until(today).getDays(); // 지난 기간
+
+        if (totalDays == 0) return 100L;                 // 시작일 = 종료일 (1일짜리 프로젝트)
+
+        long progress = Math.round((elapsedDays * 100.0) / totalDays);
+        return Math.min(progress, 100L);                 // 100% 이상은 안 되게 제한
+    }
+
 }
 
