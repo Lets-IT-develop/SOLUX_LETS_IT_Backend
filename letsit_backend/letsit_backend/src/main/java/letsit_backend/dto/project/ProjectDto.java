@@ -15,6 +15,7 @@ public class ProjectDto {
     private String onoff;
     private List<String> stack;
     private String difficulty;
+    private List<String> categories;
     private Long userId;
     private LocalDate projectStartDate;
     private LocalDate projectEndDate;
