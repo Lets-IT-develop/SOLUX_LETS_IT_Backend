@@ -1,4 +1,4 @@
-package letsit_backend.service.post;
+package letsit_backend.post;
 
 import letsit_backend.dto.comment.CommentResponseDto;
 import letsit_backend.dto.post.PostRequestDto;
