@@ -98,7 +98,7 @@ public class PostService {
             throw new CustomException(PostErrorCode.POST_CLOSED);
         }
         if (!post.getMember().getUserId().equals(member.getUserId())) {
-            throw new CustomException(CommonErrorCode.UNAUTHORIZED);
+            throw new CustomException(PostErrorCode.NOT_MATCHING_USER);
         }
 
         // 게시글 정보 수정
@@ -147,7 +147,7 @@ public class PostService {
     public void deletePost(Member member, Long postId) {
         Post post = findPostById(postId);
         if (!post.getMember().getUserId().equals(member.getUserId())) {
-            throw new CustomException(CommonErrorCode.UNAUTHORIZED);
+            throw new CustomException(PostErrorCode.NOT_MATCHING_USER);
         }
         postRepository.delete(post);
     }
