@@ -5,10 +5,9 @@ import letsit_backend.CurrentUser;
 import letsit_backend.dto.post.PostRequestDto;
 import letsit_backend.dto.post.PostResponseDto;
 import letsit_backend.dto.Response;
-import letsit_backend.exception.CustomException;
-import letsit_backend.exception.ErrorCode;
 import letsit_backend.model.Member;
 import letsit_backend.service.PostService;
+import letsit_backend.swagger.PostApi;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -18,7 +17,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/posts")
 @RequiredArgsConstructor
-public class PostController {
+public class PostController implements PostApi {
 
     private final PostService postService;
 

@@ -6,6 +6,7 @@ import letsit_backend.dto.project.ProjectDto;
 import letsit_backend.dto.Response;
 import letsit_backend.model.Member;
 import letsit_backend.service.ProjectService;
+import letsit_backend.swagger.ProjectApi;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -15,7 +16,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/projects")
-public class ProjectController {
+public class ProjectController implements ProjectApi {
     private final ProjectService projectService;
 
     @GetMapping("/organizinglist")
