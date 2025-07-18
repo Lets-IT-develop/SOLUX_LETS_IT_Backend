@@ -37,6 +37,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         CustomOAuth2User customOAuth2User = (CustomOAuth2User) authentication.getPrincipal();
 
         String username = customOAuth2User.getUsername();
+        Long userId = customOAuth2User.getId();
 
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
         Iterator<? extends GrantedAuthority> iterator = authorities.iterator();
@@ -44,7 +45,8 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         GrantedAuthority auth = iterator.next();
         String role = auth.getAuthority();
 
-        String accessToken = jwtUtil.createJwt(username, role, Duration.ofHours(6).toMillis()); // 6시간
+
+        String accessToken = jwtUtil.createJwt(username, userId, role, Duration.ofHours(6).toMillis()); // 6시간
         String refreshToken = jwtUtil.createRefreshToken(username, Duration.ofDays(7).toMillis()); // 7일
 
         redisService.setRefreshToken(username, refreshToken, Duration.ofDays(7).toMillis());
@@ -56,11 +58,12 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         String redirectUrl;
 
-        if (existMember) {
-            redirectUrl = "http://localhost:3000/projects"; // 기존 유저는 홈으로
-        } else {
-            redirectUrl = "http://localhost:3000/sign-up"; // 새 유저는 프로필 작성 페이지로
-        }
+//        if (existMember) {
+//            redirectUrl = "http://localhost:3000/projects"; // 기존 유저는 홈으로
+//        } else {
+//            redirectUrl = "http://localhost:3000/sign-up"; // 새 유저는 프로필 작성 페이지로
+//        }
+        redirectUrl = "http://localhost:3000";
         response.sendRedirect(redirectUrl);
     }
 }

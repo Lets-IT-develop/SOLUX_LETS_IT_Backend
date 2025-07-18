@@ -26,6 +26,7 @@ public class AuthService {
 
         String username = jwtUtil.getUsername(refreshToken);
         String savedRefresh = redisService.getRefreshToken(username);
+        Long userId = jwtUtil.getUserId(refreshToken);
 
         if (!refreshToken.equals(savedRefresh)) {
             return Response.fail("토큰 불일치");
@@ -34,7 +35,7 @@ public class AuthService {
         String role = jwtUtil.getRole(refreshToken);
         long accessTokenMs = Duration.ofHours(6).toMillis();
 
-        response.addCookie(CookieUtil.createCookie("Authorization", jwtUtil.createJwt(username, role, accessTokenMs)));
+        response.addCookie(CookieUtil.createCookie("Authorization", jwtUtil.createJwt(username, userId, role, accessTokenMs)));
 
         return Response.success("액세스 토큰 재발급 완료", null);
     }

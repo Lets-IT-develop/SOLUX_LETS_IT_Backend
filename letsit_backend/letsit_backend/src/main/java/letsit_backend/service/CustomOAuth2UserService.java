@@ -39,7 +39,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         //리소스 서버에서 발급 받은 정보로 사용자를 특정할 아이디 값을 만듦
         String username = oAuth2Response.getProvider() + " " + oAuth2Response.getProviderId();
 
-        Member existData = memberRepository.findByUsername(username);
+        Member existData = memberRepository.findByUsername(username).orElse(null);
 
         if (existData == null) {
             existData = Member.builder()
@@ -55,8 +55,11 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
         memberRepository.save(existData);
 
+        Long userId = existData.getUserId();
+
         MemberDto memberDto = MemberDto.builder()
                 .username(username)
+                .member(userId)
                 .name(oAuth2Response.getName())
                 .role("ROLE_USER")
                 .build();

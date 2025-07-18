@@ -6,6 +6,7 @@ import lombok.Getter;
 @Getter
 @Builder
 public class MemberDto {
+    private Long member;
     private String role;
     private String name;
     private String username;

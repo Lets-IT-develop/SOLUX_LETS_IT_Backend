@@ -30,14 +30,20 @@ public class JWTFilter extends OncePerRequestFilter {
         String accessToken = null;
         Cookie[] cookies = request.getCookies();
 
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if ("Authorization".equals(cookie.getName())) {
-                    accessToken = cookie.getValue();
-                    break; // Authorization 쿠키를 찾으면 반복 중단
-                }
-            }
+        String header = request.getHeader("Authorization");
+        if (header != null && header.startsWith("Bearer ")) {
+            accessToken = header.substring(7);
         }
+
+        // 쿠키에서 찾는 방식
+//        if (cookies != null) {
+//            for (Cookie cookie : cookies) {
+//                if ("Authorization".equals(cookie.getName())) {
+//                    accessToken = cookie.getValue();
+//                    break; // Authorization 쿠키를 찾으면 반복 중단
+//                }
+//            }
+//        }
 
         //Authorization 헤더 검증
         if (accessToken == null || jwtUtil.isExpired(accessToken) || redisService.isBlackListed(accessToken)) {
@@ -49,9 +55,10 @@ public class JWTFilter extends OncePerRequestFilter {
 
         String username = jwtUtil.getUsername(accessToken);
         String role = jwtUtil.getRole(accessToken);
+        Long userId = jwtUtil.getUserId(accessToken);
 
         CustomOAuth2User user = new CustomOAuth2User(
-                MemberDto.builder().username(username).role(role).build()
+                MemberDto.builder().username(username).member(userId).role(role).build()
         );
 
         //스프링 시큐리티 인증 토큰 생성

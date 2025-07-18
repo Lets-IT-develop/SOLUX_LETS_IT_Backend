@@ -3,6 +3,7 @@ package letsit_backend.service;
 import letsit_backend.dto.profile.*;
 import letsit_backend.exception.CommonErrorCode;
 import letsit_backend.exception.CustomException;
+import letsit_backend.exception.ProfileErrorCode;
 import letsit_backend.model.Member;
 import letsit_backend.model.Profile;
 import letsit_backend.repository.MemberRepository;
@@ -17,22 +18,46 @@ public class ProfileService {
     private final MemberRepository memberRepository;
     private final ProfileRepository profileRepository;
 
-    private Member findMemberById(Long memberId) {
-        return memberRepository.findById(memberId)
-                .orElseThrow(CommonErrorCode.USER_NOT_FOUND::getDefaultException);
+//    private Member findMemberByUsername(String username) {
+//        return memberRepository.findByUsername(username)
+//                .orElseThrow(ProfileErrorCode.USER_NOT_FOUND::getDefaultException);
+//    }
+
+    private Member findMemberById(Long userId) {
+        if (userId == null) {
+            throw new CustomException(CommonErrorCode.MISSING_PARAMETER);
+        }
+
+        return memberRepository.findById(userId)
+                .orElseThrow(ProfileErrorCode.USER_NOT_FOUND::getDefaultException);
     }
 
     private Profile findProfileByMember(Member member) {
         Profile profile = profileRepository.findByMember(member);
         if (profile == null) {
-            throw new CustomException(CommonErrorCode.PROFILE_NOT_FOUND);
+            throw new CustomException(ProfileErrorCode.PROFILE_NOT_FOUND);
         }
         return profile;
     }
 
     // 프로필 정보 조회
-    public ProfileResponseDto getProfileInfo(Long memberId) {
-        Member member = findMemberById(memberId);
+//    public ProfileResponseDto getProfileInfo(String username) {
+//        Member member = findMemberByUsername(username);
+//
+//        Profile profile = findProfileByMember(member);
+//
+//        return ProfileResponseDto.builder()
+//                .nickname(profile.getNickname())
+//                .profileImageUrl(profile.getProfileImageUrl())
+//                .interests(profile.getInterests())
+//                .skills(profile.getSkills())
+//                .bio(profile.getBio())
+//                .sns(profile.getSns())
+//                .build();
+//    }
+
+    public ProfileResponseDto getProfileInfo(Long userId) {
+        Member member = findMemberById(userId);
 
         Profile profile = findProfileByMember(member);
 
@@ -47,8 +72,8 @@ public class ProfileService {
     }
 
     // 프로필 생성
-    public void createProfile(Long memberId, ProfileRequestDto profileRequestDto) {
-        Member member = findMemberById(memberId);
+    public void createProfile(Long userId, ProfileRequestDto profileRequestDto) {
+        Member member = findMemberById(userId);
 
         Profile profile = new Profile(
                 member,
@@ -64,8 +89,8 @@ public class ProfileService {
     }
 
     // 프로필 수정
-    public void updateProfile(Long memberId, ProfileUpdateRequestDto profileUpdateRequestDto) {
-        Member member = findMemberById(memberId);
+    public void updateProfile(Long userId, ProfileUpdateRequestDto profileUpdateRequestDto) {
+        Member member = findMemberById(userId);
         Profile profile = findProfileByMember(member);
 
         Profile updatedProfile = Profile.builder()
@@ -83,8 +108,8 @@ public class ProfileService {
     // TODO 머지 후 스킬 관련 로직 작성
 
     // sns 변수 타입 고민
-    public void createSNS(Long memberId, SNSRequestDto snsRequestDto) {
-        Member member = findMemberById(memberId);
+    public void createSNS(Long userId, SNSRequestDto snsRequestDto) {
+        Member member = findMemberById(userId);
         Profile profile = findProfileByMember(member);
 
         profile.createSNS(snsRequestDto.getSns());
