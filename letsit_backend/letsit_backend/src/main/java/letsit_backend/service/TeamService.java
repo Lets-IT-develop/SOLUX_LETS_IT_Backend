@@ -25,7 +25,11 @@ public class TeamService {
     private final TeamPostRepository teamPostRepository;
     private final ProfileRepository profileRepository;
     private final ApplyRepository applyRepository;
+    private final MemberRepository memberRepository;
 
+    public Member getMemberByUsername(String username) {
+        return memberRepository.findByUsername(username);
+    }
     // 팀 게시판 & 팀멤버 생성 (게시글 주인 only)
     @Transactional
     public Long createTeam(Long postId, Member member, TeamCreateRequestDto request) {
@@ -86,7 +90,6 @@ public class TeamService {
         TeamPost teamPost = getTeamPost(teamId);
         TeamMember currentLeader = getTeamMemberByMemberAndTeamPost(member,teamPost);
         validateIsLeader(currentLeader);
-
         teamPost.updateComplete();
     }
 
