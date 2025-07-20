@@ -1,10 +1,11 @@
 package letsit_backend.service;
 
+import letsit_backend.dto.auth.CustomOAuth2User;
 import letsit_backend.dto.comment.CommentResponseDto;
 import letsit_backend.dto.post.PostRequestDto;
 import letsit_backend.dto.post.PostResponseDto;
-import letsit_backend.exception.CommonErrorCode;
 import letsit_backend.exception.CustomException;
+import letsit_backend.exception.MemberErrorCode;
 import letsit_backend.exception.PostErrorCode;
 import letsit_backend.model.*;
 import letsit_backend.repository.*;
@@ -27,6 +28,7 @@ public class PostService {
     private final SkillStackRepository skillStackRepository;
     private final SoftSkillRepository softSkillRepository;
     private final CategoryRepository categoryRepository;
+    private final MemberRepository memberRepository;
 
     private static final String INVALID_STACK = "유효하지 않은 스택 이름이 포함되어 있습니다.";
     private static final String INVALID_SOFT_SKILL = "유효하지 않은 소프트 스킬 이름이 포함되어 있습니다.";
@@ -35,7 +37,8 @@ public class PostService {
 
     // 게시글 생성
     @Transactional
-    public PostResponseDto createPost(Member member, PostRequestDto requestDto) {
+    public PostResponseDto createPost(CustomOAuth2User oAuth2User, PostRequestDto requestDto) {
+        Member member = findMemberById(oAuth2User.getId());
         Area region = findAreaById(requestDto.getRegionId());
         Area subRegion = findAreaById(requestDto.getSubRegionId());
 
@@ -89,7 +92,8 @@ public class PostService {
 
     // 게시글 수정
     @Transactional
-    public PostResponseDto updatePost(Member member, Long postId, PostRequestDto requestDto) {
+    public PostResponseDto updatePost(CustomOAuth2User oAuth2User, Long postId, PostRequestDto requestDto) {
+        Member member = findMemberById(oAuth2User.getId());
         Post post = findPostById(postId);
         Area region = findAreaById(requestDto.getRegionId());
         Area subRegion = findAreaById(requestDto.getSubRegionId());
@@ -144,7 +148,8 @@ public class PostService {
 
     // 게시글 삭제
     @Transactional
-    public void deletePost(Member member, Long postId) {
+    public void deletePost(CustomOAuth2User oAuth2User, Long postId) {
+        Member member = findMemberById(oAuth2User.getId());
         Post post = findPostById(postId);
         if (!post.getMember().getUserId().equals(member.getUserId())) {
             throw new CustomException(PostErrorCode.NOT_MATCHING_USER);
@@ -167,7 +172,8 @@ public class PostService {
 
     // 작성자에 의한 게시글 마감처리
     @Transactional
-    public void closePost(Member member, Long postId) {
+    public void closePost(CustomOAuth2User oAuth2User, Long postId) {
+        Member member = findMemberById(oAuth2User.getId());
         Post post = findPostById(postId);
 
         if (!post.getMember().getUserId().equals(member.getUserId())) {
@@ -191,6 +197,11 @@ public class PostService {
     }
 
     // findByX
+    private Member findMemberById(Long memberId) {
+        return memberRepository.findById(memberId)
+                .orElseThrow(() -> new CustomException(MemberErrorCode.MEMBER_NOT_FOUND));
+    }
+
     private Area findAreaById(Long areaId) {
         return areaRepository.findById(areaId)
                 .orElseThrow(() -> new CustomException(PostErrorCode.AREA_NOT_FOUND));

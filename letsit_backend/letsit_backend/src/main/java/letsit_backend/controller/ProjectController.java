@@ -1,6 +1,7 @@
 package letsit_backend.controller;
 
 import letsit_backend.CurrentUser;
+import letsit_backend.dto.auth.CustomOAuth2User;
 import letsit_backend.dto.project.OngoingProjectDto;
 import letsit_backend.dto.project.ProjectDto;
 import letsit_backend.dto.Response;
@@ -20,26 +21,26 @@ public class ProjectController implements ProjectApi {
     private final ProjectService projectService;
 
     @GetMapping("/organizinglist")
-    public Response<List<ProjectDto>> getOrganizingList(@CurrentUser Member member) {
-        List<ProjectDto> projects = projectService.getProjectsByUserId(member);
+    public Response<List<ProjectDto>> getOrganizingList(@CurrentUser CustomOAuth2User oAuth2User) {
+        List<ProjectDto> projects = projectService.getProjectsByUserId(oAuth2User);
         return Response.success("구인 중인 프로젝트 목록", projects);
     }
 
     @GetMapping("/appliedlist")
-    public Response<List<ProjectDto>> getAppliedList(@CurrentUser Member member) {
-        List<ProjectDto> projects = projectService.getAppliedProjectsByUserId(member);
+    public Response<List<ProjectDto>> getAppliedList(@CurrentUser CustomOAuth2User oAuth2User) {
+        List<ProjectDto> projects = projectService.getAppliedProjectsByUserId(oAuth2User);
         return Response.success("신청한 프로젝트 목록", projects);
     }
 
     @GetMapping("/ongoinglist")
-    public Response<List<OngoingProjectDto>> getOngoingList(@CurrentUser Member member) {
-        List<OngoingProjectDto> ongoingProjects = projectService.getOngoingProjectsByUserId(member);
+    public Response<List<OngoingProjectDto>> getOngoingList(@CurrentUser CustomOAuth2User oAuth2User) {
+        List<OngoingProjectDto> ongoingProjects = projectService.getOngoingProjectsByUserId(oAuth2User);
         return Response.success("진행 중인 프로젝트 목록", ongoingProjects);
     }
 
     @GetMapping("/completedlist")
-    public Response<List<OngoingProjectDto>> getCompletedList(@CurrentUser Member member) {
-        List<OngoingProjectDto> ongoingProjects = projectService.getCompletedProjectsByUserId(member);
+    public Response<List<OngoingProjectDto>> getCompletedList(@CurrentUser CustomOAuth2User oAuth2User) {
+        List<OngoingProjectDto> ongoingProjects = projectService.getCompletedProjectsByUserId(oAuth2User);
         return Response.success("완료된 프로젝트 목록", ongoingProjects);
     }
 }

@@ -1,7 +1,10 @@
 package letsit_backend.service;
 
+import letsit_backend.dto.auth.CustomOAuth2User;
 import letsit_backend.dto.project.OngoingProjectDto;
 import letsit_backend.dto.project.ProjectDto;
+import letsit_backend.exception.CustomException;
+import letsit_backend.exception.MemberErrorCode;
 import letsit_backend.model.*;
 import letsit_backend.repository.*;
 import lombok.RequiredArgsConstructor;
@@ -18,9 +21,11 @@ public class ProjectService {
     private final ApplyRepository applyRepository;
     private final TeamMemberRepository teamMemberRepository;
     private final ProfileRepository profileRepository;
+    private final MemberRepository memberRepository;
 
     // 회원이 작성한 프로젝트 목록 조회
-    public List<ProjectDto> getProjectsByUserId(Member member) {
+    public List<ProjectDto> getProjectsByUserId(CustomOAuth2User oAuth2User) {
+        Member member = findMemberById(oAuth2User.getId());
         // 회원이 작성한 게시글 중에서 마감되지 않은 게시글을 조회
         List<Post> posts = postRepository.findByMemberAndDeadlineFalse(member);
         return posts.stream()
@@ -30,7 +35,8 @@ public class ProjectService {
 
 
     // 회원이 신청한 프로젝트 목록 조회
-    public List<ProjectDto> getAppliedProjectsByUserId(Member member) {
+    public List<ProjectDto> getAppliedProjectsByUserId(CustomOAuth2User oAuth2User) {
+        Member member = findMemberById(oAuth2User.getId());
         List<Apply> applies = applyRepository.findByUserId(member);
 
         // 필터링: 신청한 프로젝트 중에서 마감되지 않은 게시글만 선택
@@ -43,12 +49,14 @@ public class ProjectService {
     }
 
     // 회원이 참여 중인 프로젝트 목록 조회
-    public List<OngoingProjectDto> getOngoingProjectsByUserId(Member member) {
+    public List<OngoingProjectDto> getOngoingProjectsByUserId(CustomOAuth2User oAuth2User) {
+        Member member = findMemberById(oAuth2User.getId());
         return getProjectsByCompletionStatus(member, false);
     }
 
     // 회원이 완료한 프로젝트 목록 조회
-    public List<OngoingProjectDto> getCompletedProjectsByUserId(Member member) {
+    public List<OngoingProjectDto> getCompletedProjectsByUserId(CustomOAuth2User oAuth2User) {
+        Member member = findMemberById(oAuth2User.getId());
         return getProjectsByCompletionStatus(member, true);
     }
 
@@ -128,6 +136,12 @@ public class ProjectService {
 
         long progress = Math.round((elapsedDays * 100.0) / totalDays);
         return Math.min(progress, 100L);                 // 100% 이상은 안 되게 제한
+    }
+
+    // findByX
+    private Member findMemberById(Long memberId) {
+        return memberRepository.findById(memberId)
+                .orElseThrow(() -> new CustomException(MemberErrorCode.MEMBER_NOT_FOUND));
     }
 
 }

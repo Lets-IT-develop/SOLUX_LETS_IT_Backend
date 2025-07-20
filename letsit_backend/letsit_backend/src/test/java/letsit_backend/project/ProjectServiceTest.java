@@ -1,5 +1,7 @@
 package letsit_backend.project;
 
+import letsit_backend.dto.auth.CustomOAuth2User;
+import letsit_backend.dto.auth.MemberDto;
 import letsit_backend.dto.project.OngoingProjectDto;
 import letsit_backend.dto.project.ProjectDto;
 import letsit_backend.model.*;
@@ -83,6 +85,16 @@ class ProjectServiceTest {
                 .build();
     }
 
+    private CustomOAuth2User asOAuth2User(Member member) {
+        MemberDto dto = MemberDto.builder()
+                .id(member.getUserId())
+                .username(member.getUsername() == null ? "testuser" : member.getUsername())
+                .name(member.getName() == null ? "테스트유저" : member.getName())
+                .role(member.getRole() == null ? "ROLE_USER" : member.getRole().name())
+                .build();
+        return new CustomOAuth2User(dto);
+    }
+
     @Test
     @DisplayName("회원이 작성한 프로젝트 목록 조회")
     void getProjectsByUserId() {
@@ -90,7 +102,7 @@ class ProjectServiceTest {
         when(postRepository.findByMemberAndDeadlineFalse(member)).thenReturn(List.of(post));
 
         // when: 서비스 메서드 호출
-        List<ProjectDto> result = projectService.getProjectsByUserId(member);
+        List<ProjectDto> result = projectService.getProjectsByUserId(asOAuth2User(member));
 
         // then: 반환된 ProjectDto 리스트가 1개이며, 제목이 예상과 일치함
         assertThat(result).hasSize(1);
@@ -110,7 +122,7 @@ class ProjectServiceTest {
         when(applyRepository.findByUserId(member)).thenReturn(List.of(apply));
 
         // when: 서비스 메서드 호출
-        List<ProjectDto> result = projectService.getAppliedProjectsByUserId(member);
+        List<ProjectDto> result = projectService.getAppliedProjectsByUserId(asOAuth2User(member));
 
         // then: 신청한 프로젝트 중 마감되지 않은 것만 반환되어야 함
         assertThat(result).hasSize(1);
@@ -143,7 +155,7 @@ class ProjectServiceTest {
         );
 
         // when
-        List<OngoingProjectDto> result = projectService.getOngoingProjectsByUserId(member);
+        List<OngoingProjectDto> result = projectService.getOngoingProjectsByUserId(asOAuth2User(member));
 
         // then
         assertThat(result).hasSize(1);
@@ -173,7 +185,7 @@ class ProjectServiceTest {
         when(profileRepository.findByMember(member)).thenReturn(null); // 프로필 없는 케이스
 
         // when
-        List<OngoingProjectDto> result = projectService.getCompletedProjectsByUserId(member);
+        List<OngoingProjectDto> result = projectService.getCompletedProjectsByUserId(asOAuth2User(member));
 
         // then
         assertThat(result).hasSize(1);
@@ -187,7 +199,7 @@ class ProjectServiceTest {
     void getProjectsByUserId_whenNoProjects() {
         when(postRepository.findByMemberAndDeadlineFalse(member)).thenReturn(List.of());
 
-        List<ProjectDto> result = projectService.getProjectsByUserId(member);
+        List<ProjectDto> result = projectService.getProjectsByUserId(asOAuth2User(member));
 
         assertThat(result).isEmpty();
     }
@@ -206,7 +218,7 @@ class ProjectServiceTest {
 
         when(applyRepository.findByUserId(member)).thenReturn(List.of(apply));
 
-        List<ProjectDto> result = projectService.getAppliedProjectsByUserId(member);
+        List<ProjectDto> result = projectService.getAppliedProjectsByUserId(asOAuth2User(member));
 
         assertThat(result).isEmpty();
     }
@@ -216,7 +228,7 @@ class ProjectServiceTest {
     void getOngoingProjectsByUserId_whenNoOngoingTeam() {
         when(teamMemberRepository.findAllByUserId(member)).thenReturn(List.of());
 
-        List<OngoingProjectDto> result = projectService.getOngoingProjectsByUserId(member);
+        List<OngoingProjectDto> result = projectService.getOngoingProjectsByUserId(asOAuth2User(member));
 
         assertThat(result).isEmpty();
     }
@@ -226,7 +238,7 @@ class ProjectServiceTest {
     void getCompletedProjectsByUserId_whenNoCompletedTeam() {
         when(teamMemberRepository.findAllByUserId(member)).thenReturn(List.of());
 
-        List<OngoingProjectDto> result = projectService.getCompletedProjectsByUserId(member);
+        List<OngoingProjectDto> result = projectService.getCompletedProjectsByUserId(asOAuth2User(member));
 
         assertThat(result).isEmpty();
     }

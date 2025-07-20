@@ -2,6 +2,7 @@ package letsit_backend.controller;
 
 import jakarta.validation.Valid;
 import letsit_backend.CurrentUser;
+import letsit_backend.dto.auth.CustomOAuth2User;
 import letsit_backend.dto.post.PostRequestDto;
 import letsit_backend.dto.post.PostResponseDto;
 import letsit_backend.dto.Response;
@@ -24,22 +25,22 @@ public class PostController implements PostApi {
     // 게시글 업로드
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/upload")
-    public Response<PostResponseDto> createPost(@CurrentUser Member member, @Valid @RequestBody PostRequestDto requestDto) {
-        PostResponseDto responseDto = postService.createPost(member, requestDto);
+    public Response<PostResponseDto> createPost(@CurrentUser CustomOAuth2User oAuth2User, @Valid @RequestBody PostRequestDto requestDto) {
+        PostResponseDto responseDto = postService.createPost(oAuth2User, requestDto);
         return Response.success("구인 글이 성공적으로 등록되었습니다.", responseDto);
     }
 
     // 게시글 수정
     @PutMapping("/{postId}/update")
-    public Response<PostResponseDto> updatePost(@CurrentUser Member member, @PathVariable Long postId, @Valid @RequestBody PostRequestDto requestDto) {
-        PostResponseDto updatedPost = postService.updatePost(member, postId, requestDto);
+    public Response<PostResponseDto> updatePost(@CurrentUser CustomOAuth2User oAuth2User, @PathVariable Long postId, @Valid @RequestBody PostRequestDto requestDto) {
+        PostResponseDto updatedPost = postService.updatePost(oAuth2User, postId, requestDto);
         return Response.success("구인 글이 성공적으로 수정되었습니다.", updatedPost);
     }
 
     // 게시글 삭제
     @DeleteMapping("/delete/{postId}")
-    public Response<?> deletePost(@CurrentUser Member member, @PathVariable("postId") Long postId) {
-        postService.deletePost(member, postId);
+    public Response<?> deletePost(@CurrentUser CustomOAuth2User oAuth2User, @PathVariable("postId") Long postId) {
+        postService.deletePost(oAuth2User, postId);
         return Response.success("게시글이 성공적으로 삭제되었습니다.", null);
     }
 
@@ -53,8 +54,8 @@ public class PostController implements PostApi {
     // 모집 마감 처리
     @PostMapping("/{postId}/close")
     @ResponseStatus(HttpStatus.OK)
-    public Response<?> closePost(@CurrentUser Member member, @PathVariable("postId") Long postId) {
-        postService.closePost(member, postId);
+    public Response<?> closePost(@CurrentUser CustomOAuth2User oAuth2User, @PathVariable("postId") Long postId) {
+        postService.closePost(oAuth2User, postId);
         return Response.success("모집이 마감되었습니다.", null);
     }
 

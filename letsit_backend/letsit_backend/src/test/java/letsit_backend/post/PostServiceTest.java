@@ -1,5 +1,7 @@
 package letsit_backend.post;
 
+import letsit_backend.dto.auth.CustomOAuth2User;
+import letsit_backend.dto.auth.MemberDto;
 import letsit_backend.dto.comment.CommentResponseDto;
 import letsit_backend.dto.post.PostRequestDto;
 import letsit_backend.dto.post.PostResponseDto;
@@ -102,6 +104,16 @@ public class PostServiceTest {
                 .build();
     }
 
+    private CustomOAuth2User asOAuth2User(Member member) {
+        MemberDto dto = MemberDto.builder()
+                .id(member.getUserId())
+                .username(member.getUsername() == null ? "testuser" : member.getUsername())
+                .name(member.getName() == null ? "테스트유저" : member.getName())
+                .role(member.getRole() == null ? "ROLE_USER" : member.getRole().name())
+                .build();
+        return new CustomOAuth2User(dto);
+    }
+
     // 게시글 생성 성공 테스트
     @Test
     @DisplayName("게시글 생성 성공")
@@ -116,7 +128,7 @@ public class PostServiceTest {
         given(categoryRepository.findAllByCategoryNameIn(List.of("백엔드 개발"))).willReturn(List.of(category));
         given(postRepository.save(any(Post.class))).willAnswer(invocation -> invocation.getArgument(0));
 
-        PostResponseDto response = postService.createPost(member, requestDto);
+        PostResponseDto response = postService.createPost(asOAuth2User(member), requestDto);
 
         assertThat(response.getTitle()).isEqualTo("프로젝트 제목");
         assertThat(response.getStack()).containsExactly("java", "python");
@@ -130,7 +142,7 @@ public class PostServiceTest {
         PostRequestDto requestDto = buildPostRequestDto();
         given(areaRepository.findById(1L)).willReturn(Optional.empty());
 
-        assertThatThrownBy(() -> postService.createPost(member, requestDto))
+        assertThatThrownBy(() -> postService.createPost(asOAuth2User(member), requestDto))
                 .isInstanceOf(CustomException.class)
                 .hasMessageContaining("지역 아이디와 일치하는 지역이 없습니다.");
     }
@@ -145,7 +157,7 @@ public class PostServiceTest {
         given(areaRepository.findById(101L)).willReturn(Optional.of(subRegion));
         given(skillStackRepository.findAllByStackNameIn(List.of("java", "python"))).willReturn(List.of());
 
-        assertThatThrownBy(() -> postService.createPost(member, requestDto))
+        assertThatThrownBy(() -> postService.createPost(asOAuth2User(member), requestDto))
                 .isInstanceOf(CustomException.class)
                 .hasMessageContaining("유효하지 않은 스택 이름이 포함되어 있습니다.");
     }
@@ -162,7 +174,7 @@ public class PostServiceTest {
         given(areaRepository.findById(1L)).willReturn(Optional.of(region));
         given(areaRepository.findById(101L)).willReturn(Optional.of(subRegion));
 
-        assertThatThrownBy(() -> postService.updatePost(otherUser, 1L, requestDto))
+        assertThatThrownBy(() -> postService.updatePost(asOAuth2User(member), 1L, requestDto))
                 .isInstanceOf(CustomException.class)
                 .hasMessageContaining("게시글 작성자와 일치하지 않습니다.");
     }
@@ -181,7 +193,7 @@ public class PostServiceTest {
         given(areaRepository.findById(101L)).willReturn(Optional.of(subRegion));
 
         // then
-        assertThatThrownBy(() -> postService.updatePost(member, 1L, requestDto))
+        assertThatThrownBy(() -> postService.updatePost(asOAuth2User(member), 1L, requestDto))
                 .isInstanceOf(CustomException.class)
                 .hasMessageContaining("마감된 게시글은 수정할 수 없습니다.");
     }
@@ -198,7 +210,7 @@ public class PostServiceTest {
         given(softSkillRepository.findAllBySoftSkillNameIn(List.of("통솔력이 있어요"))).willReturn(List.of(softSkill));
         given(categoryRepository.findAllByCategoryNameIn(List.of("백엔드 개발"))).willReturn(List.of(category));
 
-        PostResponseDto response = postService.updatePost(member, 1L, requestDto);
+        PostResponseDto response = postService.updatePost(asOAuth2User(member), 1L, requestDto);
 
         assertThat(response.getTitle()).isEqualTo("프로젝트 제목");
     }
@@ -209,7 +221,7 @@ public class PostServiceTest {
         given(postRepository.findById(1L)).willReturn(Optional.of(post));
         doNothing().when(postRepository).delete(post);
 
-        postService.deletePost(member, 1L);
+        postService.deletePost(asOAuth2User(member), 1L);
         verify(postRepository).delete(post);
     }
 
@@ -220,7 +232,7 @@ public class PostServiceTest {
         Member other = Member.builder().userId(99L).build();
         given(postRepository.findById(1L)).willReturn(Optional.of(post));
 
-        assertThatThrownBy(() -> postService.deletePost(other, 1L))
+        assertThatThrownBy(() -> postService.deletePost(asOAuth2User(other), 1L))
                 .isInstanceOf(CustomException.class)
                 .hasMessageContaining("게시글 작성자와 일치하지 않습니다.");
     }
@@ -241,7 +253,7 @@ public class PostServiceTest {
     @DisplayName("게시글 마감 성공")
     void closePost_success() {
         given(postRepository.findById(1L)).willReturn(Optional.of(post));
-        postService.closePost(member, 1L);
+        postService.closePost(asOAuth2User(member), 1L);
         assertThat(post.isClosed()).isTrue();
     }
 
@@ -252,7 +264,7 @@ public class PostServiceTest {
         Member other = Member.builder().userId(2L).build();
         given(postRepository.findById(1L)).willReturn(Optional.of(post));
 
-        assertThatThrownBy(() -> postService.closePost(other, 1L))
+        assertThatThrownBy(() -> postService.closePost(asOAuth2User(other), 1L))
                 .isInstanceOf(CustomException.class)
                 .hasMessageContaining("게시글 작성자와 일치하지 않습니다.");
     }
@@ -264,7 +276,7 @@ public class PostServiceTest {
         post.setClosed();
         given(postRepository.findById(1L)).willReturn(Optional.of(post));
 
-        assertThatThrownBy(() -> postService.closePost(member, 1L))
+        assertThatThrownBy(() -> postService.closePost(asOAuth2User(member), 1L))
                 .isInstanceOf(CustomException.class)
                 .hasMessageContaining("이미 마감된 게시글입니다");
     }
