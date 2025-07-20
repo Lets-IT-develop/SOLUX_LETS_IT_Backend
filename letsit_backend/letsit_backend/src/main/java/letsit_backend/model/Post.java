@@ -134,7 +134,8 @@ public class Post {
     @Getter
     public enum OnOff implements KoreanEnum {
         ON("대면"),
-        OFF("비대면");
+        OFF("비대면"),
+        HYBRID("혼합");
 
         @JsonValue
         private final String korean;
