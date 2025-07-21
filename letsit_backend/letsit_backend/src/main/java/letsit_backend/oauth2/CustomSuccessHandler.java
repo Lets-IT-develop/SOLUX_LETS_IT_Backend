@@ -6,9 +6,11 @@ import jakarta.servlet.http.HttpServletResponse;
 import letsit_backend.dto.auth.CustomOAuth2User;
 import letsit_backend.jwt.JWTUtil;
 import letsit_backend.repository.MemberRepository;
+import letsit_backend.service.MemberService;
 import letsit_backend.service.RedisService;
 import letsit_backend.util.CookieUtil;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
@@ -19,9 +21,10 @@ import java.time.Duration;
 import java.util.Collection;
 import java.util.Iterator;
 
-@Slf4j
 @Component
 public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
+
+    private static final Logger logger = LoggerFactory.getLogger(MemberService.class);
 
     private final JWTUtil jwtUtil;
     private final MemberRepository memberRepository;
@@ -68,6 +71,6 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         redirectUrl = "http://localhost:3000";
         response.sendRedirect(redirectUrl);
 
-        log.info("JWT token: " + accessToken);
+        logger.info("JWT token: " + accessToken);
     }
 }
