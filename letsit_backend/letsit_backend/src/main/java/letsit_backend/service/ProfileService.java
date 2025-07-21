@@ -6,10 +6,14 @@ import letsit_backend.exception.CustomException;
 import letsit_backend.exception.ProfileErrorCode;
 import letsit_backend.model.Member;
 import letsit_backend.model.Profile;
+import letsit_backend.model.SkillStack;
 import letsit_backend.repository.MemberRepository;
 import letsit_backend.repository.ProfileRepository;
+import letsit_backend.repository.SkillStackRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @RequiredArgsConstructor
 @Service
@@ -17,6 +21,7 @@ public class ProfileService {
 
     private final MemberRepository memberRepository;
     private final ProfileRepository profileRepository;
+    private final SkillStackRepository skillStackRepository;
 
     private Member findMemberById(Long userId) {
         if (userId == null) {
@@ -44,25 +49,26 @@ public class ProfileService {
                 .nickname(profile.getNickname())
                 .profileImageUrl(profile.getProfileImageUrl())
                 .interests(profile.getInterests())
-                .skills(profile.getSkills())
+                .skillStacks(profile.getSkillStacks())
                 .bio(profile.getBio())
                 .sns(profile.getSns())
                 .build();
     }
 
     // 프로필 생성
+    // TODO 초기에 안 받는 값들 초기화시켜놓고 이후에 수정하는 식으로
     public void createProfile(Long userId, ProfileRequestDto profileRequestDto) {
         Member member = findMemberById(userId);
 
-        Profile profile = new Profile(
-                member,
-                profileRequestDto.getProfileImageUrl(), // 프로필 이미지 어떤 식으로
-                profileRequestDto.getNickname(),
-                profileRequestDto.getAgeGroup(),
-                profileRequestDto.getAgeDetail(),
-                profileRequestDto.getInterests()
-                // TODO 개인 소개
-        );
+        Profile profile = Profile.builder()
+                .member(member)
+                .profileImageUrl(profileRequestDto.getProfileImageUrl())
+                .nickname(profileRequestDto.getNickname())
+                .ageGroup(profileRequestDto.getAgeGroup())
+                .ageGroupDetail(profileRequestDto.getAgeGroupDetail())
+                .interests(profileRequestDto.getInterests())
+                .softSkills(profileRequestDto.getSoftSkills())
+                .build();
 
         profileRepository.save(profile);
     }
@@ -84,9 +90,21 @@ public class ProfileService {
         profileRepository.save(updatedProfile);
     }
 
-    // TODO 머지 후 스킬 관련 로직 작성
+    public void createSkillStack(Long userId, SkillStackRequestDto skillStackRequestDto) {
+        Member member = findMemberById(userId);
+        Profile profile = findProfileByMember(member);
 
-    // sns 변수 타입 고민
+        List<SkillStack> skillStacks = skillStackRequestDto.getSkillStackIds().stream()
+                .map(id -> skillStackRepository.findById(id)
+                        .orElseThrow(() -> new CustomException(ProfileErrorCode.SKILLSTACK_NOT_FOUND)))
+                .toList();
+
+        profile.getSkillStacks().clear();
+        profile.getSkillStacks().addAll(skillStacks);
+
+        profileRepository.save(profile);
+    }
+
     public void createSNS(Long userId, SNSRequestDto snsRequestDto) {
         Member member = findMemberById(userId);
         Profile profile = findProfileByMember(member);

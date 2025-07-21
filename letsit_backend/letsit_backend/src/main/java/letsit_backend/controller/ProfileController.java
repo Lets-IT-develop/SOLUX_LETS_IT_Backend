@@ -3,10 +3,7 @@ package letsit_backend.controller;
 import letsit_backend.CurrentUser;
 import letsit_backend.dto.Response;
 import letsit_backend.dto.auth.CustomOAuth2User;
-import letsit_backend.dto.profile.ProfileRequestDto;
-import letsit_backend.dto.profile.ProfileResponseDto;
-import letsit_backend.dto.profile.ProfileUpdateRequestDto;
-import letsit_backend.dto.profile.SNSRequestDto;
+import letsit_backend.dto.profile.*;
 import letsit_backend.service.ProfileService;
 import letsit_backend.swagger.ProfileApi;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +41,14 @@ public class ProfileController implements ProfileApi {
         profileService.updateProfile(oAuth2User.getId(), profileUpdateRequestDto);
 
         return Response.success("프로필 수정 완료", null);
+    }
+
+    @PutMapping("/skill-stack")
+    public Response<String> createSkillStack(@RequestBody SkillStackRequestDto skillStackRequestDto, @CurrentUser CustomOAuth2User oAuth2User) {
+
+        profileService.createSkillStack(oAuth2User.getId(), skillStackRequestDto);
+
+        return Response.success("스킬 스택 업데이트 완료", null);
     }
 
     @PutMapping("/sns")

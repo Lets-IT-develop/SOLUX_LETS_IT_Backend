@@ -1,5 +1,6 @@
 package letsit_backend.dto.profile;
 
+import letsit_backend.model.Interest;
 import lombok.*;
 import java.util.List;
 
@@ -8,6 +9,6 @@ import java.util.List;
 public class ProfileUpdateRequestDto {
     private String nickname;
     private String profileImageUrl;
-    private List<String> interests;
+    private List<Interest> interests;
     private String bio;
 }
