@@ -18,11 +18,6 @@ public class ProfileService {
     private final MemberRepository memberRepository;
     private final ProfileRepository profileRepository;
 
-//    private Member findMemberByUsername(String username) {
-//        return memberRepository.findByUsername(username)
-//                .orElseThrow(ProfileErrorCode.USER_NOT_FOUND::getDefaultException);
-//    }
-
     private Member findMemberById(Long userId) {
         if (userId == null) {
             throw new CustomException(CommonErrorCode.MISSING_PARAMETER);
@@ -39,22 +34,6 @@ public class ProfileService {
         }
         return profile;
     }
-
-    // 프로필 정보 조회
-//    public ProfileResponseDto getProfileInfo(String username) {
-//        Member member = findMemberByUsername(username);
-//
-//        Profile profile = findProfileByMember(member);
-//
-//        return ProfileResponseDto.builder()
-//                .nickname(profile.getNickname())
-//                .profileImageUrl(profile.getProfileImageUrl())
-//                .interests(profile.getInterests())
-//                .skills(profile.getSkills())
-//                .bio(profile.getBio())
-//                .sns(profile.getSns())
-//                .build();
-//    }
 
     public ProfileResponseDto getProfileInfo(Long userId) {
         Member member = findMemberById(userId);
