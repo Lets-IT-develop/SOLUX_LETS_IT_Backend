@@ -8,6 +8,7 @@ import letsit_backend.jwt.JWTUtil;
 import letsit_backend.repository.MemberRepository;
 import letsit_backend.service.RedisService;
 import letsit_backend.util.CookieUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
@@ -18,6 +19,7 @@ import java.time.Duration;
 import java.util.Collection;
 import java.util.Iterator;
 
+@Slf4j
 @Component
 public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
@@ -65,5 +67,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 //        }
         redirectUrl = "http://localhost:3000";
         response.sendRedirect(redirectUrl);
+
+        log.info("JWT token: " + accessToken);
     }
 }
